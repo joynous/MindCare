@@ -2,7 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BrainCircuit, HeartPulse, SmilePlus } from 'lucide-react';
+import { BrainCircuit, HeartPulse, PenBox, SmilePlus , User} from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -10,14 +10,16 @@ export default function Navigation() {
   const navLinks = [
     { name: 'Home', href: '/', icon: <SmilePlus size={20} /> },
     { name: 'Assessor', href: '/assessor', icon: <BrainCircuit size={20} /> },
+    { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
     { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
+    { name: 'Sign In', href: '/sign-in', icon: <User size={20}/>},
   ];
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full top-0 z-50">
+    <nav className="bg-[#F9BF04]/80 backdrop-blur-md border-b border-gray-100 fixed w-full top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-          MindCare
+          <a href='/'>MindCare</a>
         </span>
         <div className="flex space-x-4">
           {navLinks.map((link) => (
@@ -35,7 +37,8 @@ export default function Navigation() {
             </Link>
           ))}
         </div>
-      </div>
+      </div>.
+      
     </nav>
   );
 }
