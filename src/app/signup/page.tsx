@@ -60,7 +60,7 @@ export default function Signup() {
             Continue with Google
           </button>
           <p className="text-center text-sm text-gray-500">
-            Already a member? <a href="/signin" className="text-black underline">Sign in here</a>
+            Already a member? <a href="/login" className="text-black underline">Login</a>
           </p>
         </div>
       </div>

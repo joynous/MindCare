@@ -12,7 +12,7 @@ export default function Navigation() {
     { name: 'Assessor', href: '/assessor', icon: <BrainCircuit size={20} /> },
     { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
     { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
-    { name: 'Sign In', href: '/sign-in', icon: <User size={20}/>},
+    { name: 'Login', href: '/login', icon: <User size={20}/>},
   ];
 
   return (
