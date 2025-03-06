@@ -1,4 +1,5 @@
 import Link from 'next/link';
+const imagePath = "/images";
 import BlogCard from '../components/BlogCard';
 
 // Mock data for blog posts (replace with real data from an API or CMS)
@@ -9,7 +10,7 @@ const blogPosts = [
     title: 'How to Reduce Stress in Daily Life',
     excerpt: 'Learn practical tips to manage stress and improve your mental well-being.',
     date: '2023-10-15',
-    image: '/images/blog1.jpg', // Replace with actual image path
+    image: imagePath + '/stress.jpg', // Replace with actual image path
   },
   {
     id: 2,
@@ -17,7 +18,7 @@ const blogPosts = [
     title: 'The Benefits of Meditation',
     excerpt: 'Discover how meditation can improve your mental and physical health.',
     date: '2023-10-10',
-    image: '/images/blog2.jpg', // Replace with actual image path
+    image: imagePath + '/meditation.jpg', // Replace with actual image path
   },
   {
     id: 3,
@@ -25,16 +26,16 @@ const blogPosts = [
     title: '5 Tips for a Successful Digital Detox',
     excerpt: 'Take a break from screens and reconnect with the real world.',
     date: '2023-10-05',
-    image: '/images/blog3.jpg', // Replace with actual image path
+    image: imagePath + '/digital detox.jpg', // Replace with actual image path
   },
 ];
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 pt-20">
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">
-          Blog
+          Blogs
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogPosts.map((post) => (

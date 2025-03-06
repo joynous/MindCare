@@ -1,15 +1,11 @@
-// app/page.tsx
 "use client";
 import { JSX, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, LeafyGreen, Activity, MoonStar } from 'lucide-react';
-
-
 interface Activity {
   title: string;
   desc: string;
 }
-
 interface MentalHealthData {
   keywords: string[];
   activities: Record<string, Activity[]>;
@@ -63,10 +59,8 @@ export default function MentalHealthAssessor() {
     setSelectedKeywords(newKeywords);
   };
 
-
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-blue-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 pt-20">
       <div className="max-w-2xl mx-auto px-4 py-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

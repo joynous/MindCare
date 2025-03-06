@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+const imagePath = "/images";
 
 // Mock data for blog posts (replace with real data from an API or CMS)
 const blogPosts = [
@@ -17,7 +18,7 @@ const blogPosts = [
       </ul>
     `,
     date: '2023-10-15',
-    image: '/images/blog1.jpg', // Replace with actual image path
+    image: imagePath + '/stress.jpg', // Replace with actual image path
   },
   {
     id: 2,
@@ -33,7 +34,7 @@ const blogPosts = [
       </ul>
     `,
     date: '2023-10-10',
-    image: '/images/blog2.jpg', // Replace with actual image path
+    image: imagePath + '/meditation.jpg', // Replace with actual image path
   },
   {
     id: 3,
@@ -50,7 +51,7 @@ const blogPosts = [
       </ol>
     `,
     date: '2023-10-05',
-    image: '/images/blog3.jpg', // Replace with actual image path
+    image: imagePath + '/digital detox.jpg', // Replace with actual image path
   },
 ];
 

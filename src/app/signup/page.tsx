@@ -20,7 +20,8 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-amber-50 pt-20">
+      
       <div className="w-full max-w-md shadow-lg rounded-xl p-8 bg-white">
         <h1 className="text-2xl font-semibold text-center mb-6">Join Us Today</h1>
         <div className="space-y-4">
@@ -53,9 +54,11 @@ export default function Signup() {
             />
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button className="w-full bg-black text-white rounded-lg py-2">Sign Up</button>
+          <div className="flex justify-center">
+            <button className="w-80% bg-orange-500 mt-2 text-white px-4 py-3 rounded-full text-lg font-medium hover:bg-orange-600 transition-all flex items-center justify-center">Sign Up</button>
+          </div>
           <div className="text-center text-sm text-gray-500">OR</div>
-          <button className="w-full bg-white text-black border flex items-center justify-center py-2">
+          <button className="w-full bg-black text-white border rounded-full flex items-center justify-center py-2">
             <FcGoogle className="w-5 h-5 mr-2" />
             Continue with Google
           </button>
