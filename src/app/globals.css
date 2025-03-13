@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* app/globals.css */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes pulse-horizontal {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+
+.animate-pulse-horizontal {
+  animation: pulse-horizontal 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
