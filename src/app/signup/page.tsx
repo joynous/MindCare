@@ -5,8 +5,10 @@ import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function Signup() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -16,27 +18,31 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-
-  const userAuthThroughServer = async (fullname: string,username:string, email: string, password: string) => {
+  const userAuthThroughServer = async (
+    fullname: string,
+    username: string,
+    email: string,
+    password: string
+  ) => {
     try {
-      const res = await fetch('/api/signup', {
-        method: 'POST',
+      const res = await fetch("/api/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullname ,username, email, password }),
+        body: JSON.stringify({ fullname, username, email, password }),
       });
-  
+
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Something went wrong');
+        throw new Error(errorData.message || "Something went wrong");
       }
-  
+
       const data = await res.json();
-      console.log('Signup successful:', data);
+      console.log("Signup successful:", data);
       return data;
     } catch (error) {
-      console.error('Error during signup:', error);
+      console.error("Error during signup:", error);
       throw error;
     }
   };
@@ -47,19 +53,18 @@ export default function Signup() {
     if (!formRef.current) return;
 
     const formData = new FormData(formRef.current);
-    const { fullname,username, email, password } = Object.fromEntries(formData) as {
+    const { fullname, username, email, password } = Object.fromEntries(formData) as {
       fullname: string;
-      username:string;
+      username: string;
       email: string;
       password: string;
-  };
+    };
 
     if (fullname.length < 5) return toast.error("Fullname must be at least 5 letters long");
     if (!email) return toast.error("Enter Email");
     if (!password) return toast.error("Enter Password");
 
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    
     if (!emailRegex.test(email)) return toast.error("Email is invalid");
 
     if (password !== confirmPassword) return toast.error("Passwords do not match");
@@ -67,11 +72,9 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await userAuthThroughServer(fullname, username, email, password);
       toast.success("Signup successful!");
-      userAuthThroughServer(fullname,username,email,password) 
-      console.log("Done");
-
+      router.push("/"); // Redirect to the home page after successful signup
     } catch (error) {
       toast.error("Signup failed. Please try again.");
     } finally {
@@ -83,9 +86,12 @@ export default function Signup() {
     const value = e.target.value;
     if (type === "pass") {
       setPassword(value);
-      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/;
+      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,20}$/;
+
       if (!regex.test(value)) {
-        setPasswordError("Password should be 6 to 20 characters long with at least 1 numeric, 1 lowercase, and 1 uppercase letter");
+        setPasswordError(
+          "Password should be 6 to 20 characters long with at least 1 special character , 1 numeric, 1 lowercase, and 1 uppercase letter"
+        );
       } else {
         setPasswordError("");
       }
@@ -195,13 +201,16 @@ export default function Signup() {
         <div className="text-center text-sm text-gray-500 my-2">OR</div>
         <button
           onClick={handleGoogleSignIn}
-          className="w-full bg-black text-white border rounded-full flex items-center justify-center py-2"
+          className="w-full bg-black text-white border rounded-full flex items-center justify-center py-2 cursor-pointer"
         >
           <FcGoogle className="w-5 h-5 mr-2" />
           Continue with Google
         </button>
         <p className="text-center text-sm text-gray-500 mt-2">
-          Already a member? <a href="/login" className="text-black underline">Login</a>
+          Already a member?{" "}
+          <a href="/login" className="text-black underline">
+            Login
+          </a>
         </p>
       </div>
     </div>
