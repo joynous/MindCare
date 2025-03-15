@@ -17,63 +17,15 @@ export default function Home() {
             Break free from digital overload through real-world connections. Join our community of 
             people rediscovering the joy of face-to-face interactions.
           </p>
-          <button className="bg-orange-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-orange-600 transition-all">
-            Join Next Meetup → 
-          </button>
+            <Link href="https://forms.gle/your-google-form-link" passHref target="_blank" rel="noopener noreferrer">
+            <button className="bg-orange-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-orange-600 transition-all">
+              Join Next Meetup →
+            </button>
+            </Link>
         </div>
 
-              {/* Event Photos Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Moments from Our Gatherings
-          </h2>
-          <p className="text-gray-600 max-w-xl mx-auto">
-            Glimpses of real connections and genuine smiles from our recent meetups
-          </p>
-        </div>
-        {/* Scrollable Gallery */}
-        <div className="relative group">
-          <div className="flex overflow-x-auto pb-6 scrollbar-hide space-x-4 snap-x snap-mandatory">
-            {eventImages.map((image) => (
-              <figure 
-                key={image.id}
-                className="relative flex-shrink-0 w-[300px] h-[400px] rounded-2xl overflow-hidden shadow-lg snap-center group-hover:opacity-75 transition-opacity"
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 300px"
-                />
-                <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-sm">
-                  {image.alt}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-          
-          {/* Scroll Hint */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-            <ArrowRight className="w-6 h-6 text-orange-500 animate-pulse-horizontal" />
-          </div>
-        </div>
-
-        {/* Caption */}
-      <Link 
-        href="/gallery" 
-        className="text-center text-orange-600 mt-6 text-sm hover:underline inline-block w-full"
-      >
-        Swipe or drag to see more memories →
-      </Link>
-      </section>
-
-
-        
-
-        {/* Weekly Events */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+                {/* Weekly Events */}
+                <div className="grid md:grid-cols-3 gap-8 mb-16">
           <div className="bg-white p-8 rounded-2xl shadow-lg">
             <h3 className="text-2xl font-bold text-gray-800 mb-4">Weekly Activities</h3>
             <ul className="space-y-3 text-gray-600">
@@ -124,6 +76,115 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+
+              {/* Event Photos Section */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            Moments from Our Gatherings
+          </h2>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            Glimpses of real connections and genuine smiles from our recent meetups
+          </p>
+        </div>
+        {/* Scrollable Gallery */}
+        <div className="relative group">
+          <div className="flex overflow-x-auto pb-6 scrollbar-hide space-x-4 snap-x snap-mandatory">
+            {eventImages.map((image) => (
+              <figure 
+                key={image.id}
+                className="relative flex-shrink-0 w-[300px] h-[400px] rounded-2xl overflow-hidden shadow-lg snap-center group-hover:opacity-75 transition-opacity"
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 300px"
+                />
+                <figcaption className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white text-sm">
+                  {image.alt}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          
+          {/* Scroll Hint */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+            <ArrowRight className="w-6 h-6 text-orange-500 animate-pulse-horizontal" />
+          </div>
+        </div>
+
+        
+
+        {/* Caption */}
+      <Link 
+        href="/gallery" 
+        className="text-center text-orange-600 mt-6 text-sm hover:underline inline-block w-full"
+      >
+        Swipe or drag to see more memories →
+      </Link>
+      </section>
+
+      {/* Updated social links section in app/page.tsx */}
+<section className="container mx-auto px-4 py-12 text-center">
+  <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+    Connect with Our Community
+  </h3>
+  <p className="text-gray-600 max-w-xl mx-auto mb-8">
+    Join our WhatsApp group for event updates and coordination (messages limited to practical info)
+  </p>
+  
+  <div className="flex justify-center space-x-6">
+    <a
+      href="https://chat.whatsapp.com/E8TtSo1ITfiJaAJx0d4nLl?fbclid=PAY2xjawJCFfhleHRuA2FlbQIxMQABppqLn9-EKFA-zcwhRWUHrO0me2uKv3__SjqQ2lEhYksuqzjYJZR-6pIxLA_aem_R4x79czzDf8tCbfQ4c9cjQ" // Replace with your WhatsApp group link
+      target="_blank"
+      rel="noopener noreferrer"
+      className="p-3 rounded-full bg-orange-100 hover:bg-orange-200 transition-colors"
+      aria-label="WhatsApp group"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+        <path d="M8 12h8"/>
+        <path d="M12 16V8"/>
+      </svg>
+    </a>
+
+    {/* Keep other links the same */}
+    <a
+      href="https://www.instagram.com/_joynous_?igsh=am55YTh6ZmdiaTV4"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="p-3 rounded-full bg-orange-100 hover:bg-orange-200 transition-colors"
+      aria-label="Instagram profile"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+    </a>
+
+    <a
+      href="mailto:community@example.com"
+      className="p-3 rounded-full bg-orange-100 hover:bg-orange-200 transition-colors"
+      aria-label="Email us"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </a>
+  </div>
+
+  <p className="text-sm text-gray-500 mt-6">
+    WhatsApp group rules: No forwards, no spam, event info only
+  </p>
+</section>
+
+        
+
       </div>
     </div>
   );
