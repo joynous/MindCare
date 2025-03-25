@@ -17,8 +17,8 @@ export default function Home() {
             Break free from digital overload through real-world connections. Join our community of 
             people rediscovering the joy of face-to-face interactions.
           </p>
-            <Link href="https://forms.gle/your-google-form-link" passHref target="_blank" rel="noopener noreferrer">
-            <button className="bg-orange-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-orange-600 transition-all">
+            <Link href="https://docs.google.com/forms/d/1HBYyI0L43N-kTbfaUspzQwk-K8O81a6xPEiflmCbOWw" passHref target="_blank" rel="noopener noreferrer">
+            <button className="bg-orange-500 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-orange-600 transition-all cursor-pointer">
               Join Next Meetup →
             </button>
             </Link>
@@ -48,13 +48,24 @@ export default function Home() {
             <h3 className="text-2xl font-bold text-gray-800 mb-4">Why Join Us?</h3>
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
-                <div className="bg-orange-100 p-2 rounded-lg">
-                  <span className="text-orange-600">🌱</span>
-                </div>
-                <div>
-                  <h4 className="font-medium">Digital Detox</h4>
-                  <p className="text-sm text-gray-500">Phone-free interactions</p>
-                </div>
+                <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-center space-x-2">
+                    <span className="text-orange-500">▹</span>
+                    <span>Discover new personal growth and self-development skills</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="text-orange-500">▹</span>
+                    <span>Participate in fun, interactive, and engaging activities</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="text-orange-500">▹</span>
+                    <span>Connect with like-minded, positive people</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="text-orange-500">▹</span>
+                    <span>Learn valuable insights and practical tips related to mental health</span>
+                  </li>
+                </ul>
               </div>
               {/* Add more benefit cards */}
             </div>
@@ -183,9 +194,72 @@ export default function Home() {
   </p>
 </section>
 
-        
+    <footer className="font-sans bg-gray-100 p-10 text-gray-800">
+      <div className="max-w-6xl mx-auto flex flex-wrap justify-between">
+        {/* Newsletter Section */}
+        <div className="w-full md:w-1/2 mb-8">
+          <h2 className="text-2xl mb-4">Stay Connected with Us</h2>
+          <form className="flex flex-wrap gap-3 mb-4">
+            <input
+              type="email"
+              placeholder="Enter Your Email *"
+              required
+              className="px-4 py-2 border border-gray-300 rounded flex-grow min-w-[200px]"
+            />
+            <button 
+              type="submit"
+              className="px-5 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
+            >
+              Subscribe
+            </button>
+            <div className="flex items-center gap-3 w-full">
+              <input
+                type="checkbox"
+                id="newsletter"
+                defaultChecked
+                className="w-4 h-4"
+              />
+              <label htmlFor="newsletter" className="text-sm">
+                Yes, Subscribe me to newsletter
+              </label>
+            </div>
+          </form>
+        </div>
 
+        {/* Contact Info */}
+        <div className="w-full md:w-2/5 mb-8 leading-relaxed">
+          <p className="mb-1">123-456-7890</p>
+          <p className="mb-4">info@mystie.com</p>
+          <p>
+            500 Terry Francine Street, 6th Floor,<br />
+            San Francisco, CA 94158
+          </p>
+        </div>
+
+        {/* Footer Links */}
+        <div className="w-full flex flex-wrap gap-4 mb-6">
+          <a href="#" className="text-gray-800 hover:text-gray-600 transition-colors">
+            Privacy Policy
+          </a>
+          <a href="#" className="text-gray-800 hover:text-gray-600 transition-colors">
+            Accessibility Statement
+          </a>
+          <a href="#" className="text-gray-800 hover:text-gray-600 transition-colors">
+            Terms & Conditions
+          </a>
+          <a href="#" className="text-gray-800 hover:text-gray-600 transition-colors">
+            Refund Policy
+          </a>
+        </div>
+
+        {/* Copyright */}
+        <div className="w-full text-center mt-6 text-sm text-gray-600">
+          © 2035 by JOYNOUS. Powered and secured by Wix
+        </div>
+      </div>
+    </footer>
       </div>
     </div>
+    
   );
 }
