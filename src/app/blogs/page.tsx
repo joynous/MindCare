@@ -1,4 +1,3 @@
-import Link from 'next/link';
 const imagePath = "/images";
 import BlogCard from '../components/BlogCard';
 
