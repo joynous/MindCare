@@ -14,7 +14,7 @@ export default function Navigation() {
     { name: 'Assessor', href: '/assessor', icon: <BrainCircuit size={20} /> },
     { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
     { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
-    { name: 'Login', href: '/login', icon: <User size={20} /> },
+    // { name: 'Login', href: '/login', icon: <User size={20} /> },
     { name: 'Gallery', href: '/gallery', icon: <Camera size={20} /> },
   ];
 
@@ -28,7 +28,7 @@ export default function Navigation() {
             className="hover:opacity-80 transition-opacity"
             onClick={() => setIsMenuOpen(false)}
           >
-            MindCare
+            Joynous
           </Link>
         </span>
 
