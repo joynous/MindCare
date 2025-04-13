@@ -1,67 +1,106 @@
-export default function About() {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 pt-20">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-8">
-              Our Mission to Reconnect
-            </h1>
-  
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-semibold text-orange-600">The Digital Dilemma</h2>
-                <p className="text-gray-600 leading-relaxed">
-                  While social media promised connection, it left many feeling isolated. Our community 
-                  addresses this paradox by creating tech-conscious spaces where real relationships flourish.
-                </p>
-                <div className="bg-orange-50 p-4 rounded-xl">
-                  <p className="text-sm text-orange-700">
-                    📱 72% of members report reduced social media usage after joining
-                  </p>
+// app/about/page.tsx
+'use client';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { Users, HeartHandshake, Calendar, Sparkles, Trophy } from 'lucide-react';
+import Link from 'next/link';
+
+export default function AboutPage() {
+  const values = [
+    { 
+      icon: <HeartHandshake className="w-8 h-8" />,
+      title: "Authentic Connections",
+      text: "Fostering real friendships through shared experiences"
+    },
+    { 
+      icon: <Sparkles className="w-8 h-8" />,
+      title: "Joyful Engagement",
+      text: "Curating activities that spark happiness and creativity"
+    },
+    { 
+      icon: <Trophy className="w-8 h-8" />,
+      title: "Inclusive Wins",
+      text: "Celebrating every member's unique contributions"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] to-[#8AE2E0]/10">
+      {/* Hero Section */}
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="container mx-auto px-4 py-16 text-center"
+      >
+        <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-[#3AA3A0] to-[#F7D330] bg-clip-text text-transparent mb-6">
+          Our Story
+        </h1>
+        <p className="text-xl text-[#1A2E35] max-w-3xl mx-auto">
+          From a small group of friends to a nationwide movement fostering real human connections
+        </p>
+      </motion.section>
+
+      {/* Values Section */}
+      <motion.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        className="bg-[#3AA3A0]/10 py-12"
+      >
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-[#1A2E35] mb-12 text-center">
+            Core Values
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {values.map((value, index) => (
+              <motion.div
+                key={index}
+                initial={{ scale: 0.9, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                transition={{ delay: index * 0.2 }}
+                className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+              >
+                <div className="flex justify-center mb-4">
+                  <motion.div
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    className="bg-[#F7D330] p-3 rounded-full"
+                  >
+                    {value.icon}
+                  </motion.div>
                 </div>
-              </div>
-  
-              <div className="space-y-4">
-                <h2 className="text-2xl font-semibold text-orange-600">How We Connect</h2>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-orange-50 p-6 rounded-xl">
-                    <h3 className="font-medium mb-2">Weekly Meetups</h3>
-                    <p className="text-sm text-gray-600">
-                      Every Saturday in 15+ cities - from coffee chats to outdoor adventures
-                    </p>
-                  </div>
-                  <div className="bg-orange-50 p-6 rounded-xl">
-                    <h3 className="font-medium mb-2">Activity-Based Bonding</h3>
-                    <p className="text-sm text-gray-600">
-                      Collaborative cooking, team sports, art jams - connections through shared doing
-                    </p>
-                  </div>
-                </div>
-              </div>
-  
-              <div className="space-y-4">
-                <h2 className="text-2xl font-semibold text-orange-600">Our Community Values</h2>
-                <div className="flex flex-wrap gap-4">
-                  {['Presence Over Posts', 'Vulnerability', 'Active Listening', 'No Phones Zone'].map((value) => (
-                    <div key={value} className="bg-white border-2 border-orange-100 px-4 py-2 rounded-full">
-                      {value}
-                    </div>
-                  ))}
-                </div>
-              </div>
-  
-              <div className="bg-orange-50 p-6 rounded-xl text-center">
-                <p className="text-lg font-medium mb-2">Ready to Unplug?</p>
-                <p className="text-sm text-gray-600 mb-4">
-                  Join 5,000+ members who've found deeper connections offline
-                </p>
-                <button className="bg-orange-500 text-white px-6 py-2 rounded-full hover:bg-orange-600">
-                  Get Started
-                </button>
-              </div>
-            </div>
+                <h3 className="text-xl font-semibold text-center mb-2">
+                  {value.title}
+                </h3>
+                <p className="text-gray-600 text-center">{value.text}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </div>
-    );
-  }
+      </motion.section>
+
+      {/* CTA Section */}
+      <motion.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        className="bg-[#1A2E35] text-[#F7FFF7] py-16 mt-12"
+      >
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-6">
+            Ready to Join the Movement?
+          </h2>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="inline-block"
+          >
+            <Link
+              href="https://docs.google.com/forms/d/1HBYyI0L43N-kTbfaUspzQwk-K8O81a6xPEiflmCbOWw/viewform?edit_requested=true"
+              target='_blank'
+              className="bg-[#F7D330] text-[#1A2E35] px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] transition-colors"
+            >
+              Find Your First Event
+            </Link>
+          </motion.div>
+        </div>
+      </motion.section>
+    </div>
+  );
+}
