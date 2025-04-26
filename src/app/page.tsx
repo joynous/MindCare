@@ -6,6 +6,7 @@ import { Sparkles, Users, Calendar, MessageSquare, Camera, ChevronLeft, ChevronR
 import { eventImages } from './data/event';
 import Image from 'next/image';
 import { useRef } from 'react';
+import OptimizedImage from './components/OptimizedImage';
 
 export default function Home() {
 
@@ -116,24 +117,19 @@ export default function Home() {
                 className="flex-shrink-0 relative w-64 h-80 rounded-xl overflow-hidden hover:shadow-xl transition-shadow"
                 whileHover={{ scale: 1.02 }}
               >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1A2E35]/80 to-transparent p-4 flex flex-col justify-end">
-                  <h3 className="text-xl font-bold text-[#F7FFF7]">
-                    {image.alt}
-                  </h3>
+                <div className="relative w-full h-full">
+                  <OptimizedImage src={image.src} alt={image.alt}/>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2E35]/80 to-transparent p-4 flex flex-col justify-end">
+                    <h3 className="text-xl font-bold text-[#F7FFF7]">
+                      {image.alt}
+                    </h3>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-
-
 
       {/* Features Grid */}
       <motion.section 

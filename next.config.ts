@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 86400, // 1 day
+    domains: ['your-image-domain.com'],
+    minimumCacheTTL: 60 * 60 * 24, // 1 day
   },
   async headers() {
     return [
