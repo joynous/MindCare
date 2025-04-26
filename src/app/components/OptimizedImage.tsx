@@ -13,8 +13,9 @@ export default function OptimizedImage({
     <Image
       src={src}
       alt={alt}
-      width={600}
-      height={400}
+      // width={600}
+      // height={400}
+      fill
       placeholder="blur"
       blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkqAcAAIUAgUW0RjgAAAAASUVORK5CYII="
       className="object-cover"

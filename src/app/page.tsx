@@ -6,7 +6,6 @@ import { Sparkles, Users, Calendar, MessageSquare, Camera, ChevronLeft, ChevronR
 import { eventImages } from './data/event';
 import Image from 'next/image';
 import { useRef } from 'react';
-import OptimizedImage from './components/OptimizedImage';
 
 export default function Home() {
 
@@ -83,7 +82,7 @@ export default function Home() {
       </motion.section>
 
             {/* Event Gallery Section */}
-            <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold text-[#1A2E35]">
             Recent Memories
@@ -107,28 +106,37 @@ export default function Home() {
         </div>
 
         <div className="relative">
-          <div
-            ref={scrollContainer}
-            className="flex overflow-x-auto scrollbar-hide space-x-4 pb-4"
-          >
-            {eventImages.map((image) => (
-              <motion.div
-                key={image.id}
-                className="flex-shrink-0 relative w-64 h-80 rounded-xl overflow-hidden hover:shadow-xl transition-shadow"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="relative w-full h-full">
-                  <OptimizedImage src={image.src} alt={image.alt}/>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2E35]/80 to-transparent p-4 flex flex-col justify-end">
-                    <h3 className="text-xl font-bold text-[#F7FFF7]">
-                      {image.alt}
-                    </h3>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+    <div
+      ref={scrollContainer}
+      className="flex overflow-x-auto scrollbar-hide pb-4 gap-4"
+    >
+      {eventImages.map((image) => (
+        <div 
+          key={image.id}
+          className="relative flex-shrink-0 w-[300px] h-[400px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group"
+        >
+          {/* Image Container */}
+          <div className="relative w-full h-full">
+            <Image
+              src={image.src}
+              alt={image.alt}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+            
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-white text-sm font-medium">
+                {image.alt}
+              </p>
+            </div>
           </div>
         </div>
+      ))}
+    </div>
+        </div>
+
       </section>
 
       {/* Features Grid */}
