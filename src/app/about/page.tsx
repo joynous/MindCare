@@ -1,8 +1,7 @@
 // app/about/page.tsx
 'use client';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
-import { Users, HeartHandshake, Calendar, Sparkles, Trophy } from 'lucide-react';
+import { HeartHandshake, Sparkles, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AboutPage() {

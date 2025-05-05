@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BrainCircuit, HeartPulse, PenBox, SmilePlus, User, Menu, X, Camera } from 'lucide-react';
+import { BrainCircuit, HeartPulse, SmilePlus, Menu, X, Camera } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -12,7 +12,7 @@ export default function Navigation() {
   const navLinks = [
     { name: 'Home', href: '/', icon: <SmilePlus size={20} /> },
     { name: 'Assessor', href: '/assessor', icon: <BrainCircuit size={20} /> },
-    { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
+    // { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
     { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
     // { name: 'Login', href: '/login', icon: <User size={20} /> },
     { name: 'Gallery', href: '/gallery', icon: <Camera size={20} /> },
