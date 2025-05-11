@@ -35,20 +35,22 @@ export default async function EventsPage() {
               <Image 
                 src={`/images/events/event-${Math.floor(Math.random()*(29))}.webp`}
                 key={event.eventid}
+                width={100}
+                height={48}
                 alt={event.eventname}
                 className="w-full h-48 object-cover"
               />
               
               <div className="p-6">
                 <h2 className="text-xl font-bold mb-2 text-[#1A2E35]">
-                  {event.eventName}
+                  {event.eventname}
                 </h2>
                 
                 <div className="space-y-2 text-gray-600">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-[#3AA3A0]" />
                     <span>
-                      {new Date(event.eventdate).toLocaleDateString('en-IN')} • {event.eventTime}
+                      {new Date(event.eventdate).toLocaleDateString('en-IN')} • {event.eventtime}
                     </span>
                   </div>
                   
