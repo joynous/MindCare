@@ -11,6 +11,7 @@
     "dev:clean": "npm run clean && next dev"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^2.2.0",
     "@headlessui/react": "^2.2.2",
     "@heroicons/react": "^2.2.0",
     "@next/font": "^14.2.15",

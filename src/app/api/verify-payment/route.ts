@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { supabase } from '../../lib/supabase';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const brevo = require('@getbrevo/brevo'); // Use require instead of import
 
 // Initialize legacy Brevo client

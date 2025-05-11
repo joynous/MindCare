@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Razorpay: any;
   }
 }
@@ -79,6 +80,7 @@ export default function PaymentButton({
           contact: formData?.phone || ''
         },
         capture: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handler: async (response: any) => {
 try {
           // Immediate capture call
@@ -115,7 +117,7 @@ try {
       handlePaymentError('', error);
     }
   };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePaymentError = async (registrationId: string, error: any) => {
     if (registrationId) {
       await supabase

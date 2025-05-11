@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Calendar, MapPin, Users, Clock } from 'lucide-react';
+import { Calendar, MapPin, Users } from 'lucide-react';
 
 const events = [
   {

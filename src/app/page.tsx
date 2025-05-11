@@ -2,7 +2,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Sparkles, Users, Calendar, MessageSquare, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, Users, Calendar, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { eventImages } from './data/event';
 import Image from 'next/image';
 import { useRef } from 'react';

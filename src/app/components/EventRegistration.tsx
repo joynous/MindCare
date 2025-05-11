@@ -11,7 +11,7 @@ type FormData = {
 };
 
 const EventRegistration = ({ eventId }: { eventId: string }) => {
-  const { register, handleSubmit, formState, trigger } = useForm<FormData>();
+  const { register, handleSubmit, trigger } = useForm<FormData>();
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState<{
@@ -42,7 +42,7 @@ const EventRegistration = ({ eventId }: { eventId: string }) => {
   };
 
   // Payment success handler
-  const handlePaymentSuccess = (paymentId: string) => {
+  const handlePaymentSuccess = () => {
     setPaymentStatus('success');
     // Here you would typically submit the form data to your API
     console.log('Payment successful! Data:', formData);
