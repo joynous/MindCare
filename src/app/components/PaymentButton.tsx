@@ -15,7 +15,6 @@ interface PaymentButtonProps {
   amount: number;
   status: 'idle' | 'processing' | 'success' | 'error';
   onRetry: () => void;
-  // Optional if you need form validation
   formData?: {
     name: string;
     email: string;
@@ -23,8 +22,9 @@ interface PaymentButtonProps {
     event: string;
   };
   onValidate?: () => Promise<boolean>;
+  onProcessing?: () => void;
   onSuccess?: (paymentId: string) => void;
-  onError?:  (error: string) => void
+  onError?: (error: string) => void;
 }
 
 export default function PaymentButton({
@@ -33,15 +33,18 @@ export default function PaymentButton({
   onRetry,
   formData,
   onValidate,
+  onProcessing,
   onSuccess
 }: PaymentButtonProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
+    script.onload = () => setScriptLoaded(true);
     document.body.appendChild(script);
 
     return () => {
@@ -50,7 +53,7 @@ export default function PaymentButton({
   }, [retryCount]);
 
   const handlePayment = async () => {
-    if (onValidate && !onValidate()) return;
+    if (!scriptLoaded || (onValidate && !(await onValidate()))) return;
     setErrorMessage(null);
 
     try {
@@ -79,27 +82,33 @@ export default function PaymentButton({
           email: formData?.email || '',
           contact: formData?.phone || ''
         },
-        capture: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handler: async (response: any) => {
-try {
-          // Immediate capture call
-          const captureResult = await fetch('/api/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              paymentId: response.razorpay_payment_id,
-              registrationId: registration.id,
-              amount: amount
-            })
-          });
+          try {
+            onProcessing?.();
+            
+            const captureResult = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId: response.razorpay_payment_id,
+                registrationId: registration.id,
+                amount: amount
+              })
+            });
 
-          if (!captureResult.ok) throw new Error('Capture failed');
-          
-          onSuccess?.(response.razorpay_payment_id);
-        } catch (error) {
-          handlePaymentError(registration.id, error);
-        }
+            if (!captureResult.ok) {
+              const errorData = await captureResult.json();
+              throw new Error(errorData.error || 'Payment verification failed');
+            }
+
+            onSuccess?.(response.razorpay_payment_id);
+          } catch (error) {
+            handlePaymentError(
+              registration.id,
+              error instanceof Error ? error : new Error('Payment processing failed')
+            );
+          }
         },
         theme: {
           color: '#3AA3A0',
@@ -114,11 +123,14 @@ try {
 
       new window.Razorpay(paymentOptions).open();
     } catch (error) {
-      handlePaymentError('', error);
+      handlePaymentError(
+        '',
+        error instanceof Error ? error : new Error('Payment initialization failed')
+      );
     }
   };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handlePaymentError = async (registrationId: string, error: any) => {
+
+  const handlePaymentError = async (registrationId: string, error: Error) => {
     if (registrationId) {
       await supabase
         .from('registrations')
@@ -127,7 +139,7 @@ try {
     }
     
     setErrorMessage(
-      error instanceof Error ? error.message : 'Payment failed. Please try again.'
+      `${error.message}. Please try again. Any money deducted will be refunded.`
     );
     onRetry();
   };
@@ -136,16 +148,18 @@ try {
     <div className="space-y-4">
       <motion.button
         onClick={handlePayment}
-        disabled={status === 'processing'}
-        whileHover={status !== 'processing' ? { scale: 1.02 } : {}}
-        whileTap={status !== 'processing' ? { scale: 0.98 } : {}}
+        disabled={!scriptLoaded || status === 'processing'}
+        whileHover={(!scriptLoaded || status === 'processing') ? {} : { scale: 1.02 }}
+        whileTap={(!scriptLoaded || status === 'processing') ? {} : { scale: 0.98 }}
         className={`w-full py-3 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-          status === 'processing'
+          status === 'processing' || !scriptLoaded
             ? 'bg-gray-300 cursor-not-allowed'
             : 'bg-[#3AA3A0] hover:bg-[#2E827F] text-white'
         }`}
       >
-        {status === 'processing' ? (
+        {!scriptLoaded ? (
+          'Loading Payment...'
+        ) : status === 'processing' ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
             Processing Payment...

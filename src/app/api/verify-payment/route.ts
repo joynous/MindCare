@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       throw new Error('Email service configuration is missing');
     }
 
-    const { paymentId, registrationId, amount } = await req.json();
+    const { paymentId, registrationId, amount, eventId } = await req.json();
     
     // 1. Capture payment
     const captureResponse = await razorpay.payments.capture(
@@ -42,13 +42,35 @@ export async function POST(req: Request) {
       );
     }
 
+     // Check available seats
+    const { data: eventData, error: eventError } = await supabase
+      .from('events')
+      .select('totalSeats, bookedSeats')
+      .eq('eventId', eventId)
+      .single();
+
+    if (eventError || !eventData) throw new Error('Event not found');
+    if (eventData.bookedSeats >= eventData.totalSeats) {
+      throw new Error('No seats available');
+    }
+
+    // Update booked seats
+    const { error: seatError } = await supabase
+      .from('events')
+      .update({ bookedSeats: eventData.bookedSeats + 1 })
+      .eq('eventId', eventId);
+
+    if (seatError) throw seatError;
+
+
     // 3. Update database
     const { error: updateError } = await supabase
       .from('registrations')
       .update({
         payment_id: paymentId,
         status: 'captured',
-        amount: amount
+        amount: amount,
+        event: eventId
       })
       .eq('id', registrationId);
 
