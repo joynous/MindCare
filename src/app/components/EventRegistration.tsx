@@ -11,19 +11,52 @@ type FormData = {
 };
 
 const EventRegistration = ({ eventId }: { eventId: string }) => {
-  const { register, handleSubmit, formState } = useForm<FormData>();
+  const { register, handleSubmit, formState, trigger } = useForm<FormData>();
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    event: string;
+  }>({
+    name: '',
+    email: '',
+    phone: '',
+    event: eventId
+  });
 
-  const onSubmit = async (data: FormData) => {
-    setPaymentStatus('processing');
-    try {
-      // Handle registration logic here
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPaymentStatus('success');
-    } catch (error) {
-      setPaymentStatus('error');
-    }
+  // Handle form updates
+  const handleFormChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+      event: eventId // Ensure event ID stays updated
+    }));
+  };
+
+  // Form validation handler
+  const validateForm = async () => {
+    const isValid = await trigger();
+    return isValid;
+  };
+
+  // Payment success handler
+  const handlePaymentSuccess = (paymentId: string) => {
+    setPaymentStatus('success');
+    // Here you would typically submit the form data to your API
+    console.log('Payment successful! Data:', formData);
+  };
+
+  // Payment error handler
+  const handlePaymentError = (error: string) => {
+    setPaymentStatus('error');
+    console.error('Payment error:', error);
+  };
+
+  // Retry handler
+  const handleRetry = () => {
+    setPaymentStatus('idle');
   };
 
   return (
@@ -50,7 +83,7 @@ const EventRegistration = ({ eventId }: { eventId: string }) => {
           <p className="text-green-700">Check your email for confirmation details.</p>
         </motion.div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(() => {})} className="space-y-6">
           {currentStep === 1 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -60,7 +93,10 @@ const EventRegistration = ({ eventId }: { eventId: string }) => {
               <div>
                 <label className="block text-sm font-medium mb-2">Full Name</label>
                 <input
-                  {...register('name', { required: true })}
+                  {...register('name', { 
+                    required: true,
+                    onChange: (e) => handleFormChange('name', e.target.value)
+                  })}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0]"
                   placeholder="Enter your full name"
                 />
@@ -72,7 +108,8 @@ const EventRegistration = ({ eventId }: { eventId: string }) => {
                   type="email"
                   {...register('email', { 
                     required: true,
-                    pattern: /^\S+@\S+\.\S+$/
+                    pattern: /^\S+@\S+\.\S+$/,
+                    onChange: (e) => handleFormChange('email', e.target.value)
                   })}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0]"
                   placeholder="your@email.com"
@@ -85,7 +122,8 @@ const EventRegistration = ({ eventId }: { eventId: string }) => {
                   type="tel"
                   {...register('phone', { 
                     required: true,
-                    pattern: /^[6-9]\d{9}$/
+                    pattern: /^[6-9]\d{9}$/,
+                    onChange: (e) => handleFormChange('phone', e.target.value)
                   })}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0]"
                   placeholder="10-digit phone number"
@@ -111,13 +149,20 @@ const EventRegistration = ({ eventId }: { eventId: string }) => {
               <div className="bg-[#F7FFF7] p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">Registration Summary</h4>
                 <p className="text-gray-600">Event: {eventId}</p>
-                <p className="text-gray-600">Price: ₹499</p>
+                <p className="text-gray-600">Name: {formData.name}</p>
+                <p className="text-gray-600">Email: {formData.email}</p>
+                <p className="text-gray-600">Phone: {formData.phone}</p>
+                <p className="text-gray-600 mt-2">Price: ₹499</p>
               </div>
 
               <PaymentButton
-                amount={499}
+                amount={10}
                 status={paymentStatus}
-                onRetry={() => setPaymentStatus('idle')}
+                formData={formData}
+                onValidate={validateForm}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+                onRetry={handleRetry}
               />
 
               <button

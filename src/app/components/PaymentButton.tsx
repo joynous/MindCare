@@ -21,8 +21,9 @@ interface PaymentButtonProps {
     phone: string;
     event: string;
   };
-  onValidate?: () => boolean;
+  onValidate?: () => Promise<boolean>;
   onSuccess?: (paymentId: string) => void;
+  onError?:  (error: string) => void
 }
 
 export default function PaymentButton({
@@ -77,33 +78,26 @@ export default function PaymentButton({
           email: formData?.email || '',
           contact: formData?.phone || ''
         },
+        capture: true,
         handler: async (response: any) => {
-          try {
-            const verification = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId: response.razorpay_payment_id,
-                registrationId: registration.id
-              })
-            });
+try {
+          // Immediate capture call
+          const captureResult = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              paymentId: response.razorpay_payment_id,
+              registrationId: registration.id,
+              amount: amount
+            })
+          });
 
-            if (!verification.ok) throw new Error('Payment verification failed');
-
-            const { error: updateError } = await supabase
-              .from('registrations')
-              .update({
-                payment_id: response.razorpay_payment_id,
-                status: 'completed'
-              })
-              .eq('id', registration.id);
-
-            if (updateError) throw updateError;
-            
-            onSuccess?.(response.razorpay_payment_id);
-          } catch (error) {
-            handlePaymentError(registration.id, error);
-          }
+          if (!captureResult.ok) throw new Error('Capture failed');
+          
+          onSuccess?.(response.razorpay_payment_id);
+        } catch (error) {
+          handlePaymentError(registration.id, error);
+        }
         },
         theme: {
           color: '#3AA3A0',
