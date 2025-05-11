@@ -2,7 +2,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Sparkles, Users, Calendar, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, Users, Calendar, MessageSquare, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 import { eventImages } from './data/event';
 import Image from 'next/image';
 import { useRef } from 'react';
@@ -70,13 +70,12 @@ export default function Home() {
             className="inline-block"
           >
             <Link
-              href="https://docs.google.com/forms/d/1HBYyI0L43N-kTbfaUspzQwk-K8O81a6xPEiflmCbOWw"
-              target='_blank'
+              href="/events"  // Direct link to the event page
               className="bg-[#F7D330] text-[#1A2E35] px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] transition-colors flex items-center gap-2"
             >
               <Sparkles className="w-5 h-5" />
-              Join us for next event
-            </Link>
+                  Join Us for Next Event
+              </Link>
           </motion.div>
         </div>
       </motion.section>
