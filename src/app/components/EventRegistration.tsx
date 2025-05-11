@@ -10,7 +10,7 @@ type FormData = {
   phone: string;
 };
 
-interface EventData {
+export interface EventData {
   eventId: string;
   eventName: string;
   eventDate: string;
@@ -171,8 +171,9 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               </div>
 
               <PaymentButton
-                amount={10}
+                amount={5}
                 status={paymentStatus}
+                eventData={event}
                 formData={formData}
                 onValidate={validateForm}
                 onProcessing={handlePaymentProcessing}

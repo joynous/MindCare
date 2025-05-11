@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { EventData } from './EventRegistration';
 
 declare global {
   interface Window {
@@ -21,6 +22,7 @@ interface PaymentButtonProps {
     phone: string;
     event: string;
   };
+  eventData: EventData;
   onValidate?: () => Promise<boolean>;
   onProcessing?: () => void;
   onSuccess?: (paymentId: string) => void;
@@ -32,6 +34,7 @@ export default function PaymentButton({
   status,
   onRetry,
   formData,
+  eventData,
   onValidate,
   onProcessing,
   onSuccess
@@ -92,6 +95,7 @@ export default function PaymentButton({
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 paymentId: response.razorpay_payment_id,
+                eventId: eventData.eventId,
                 registrationId: registration.id,
                 amount: amount
               })
