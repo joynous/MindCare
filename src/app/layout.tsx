@@ -7,8 +7,8 @@ import Footer from './components/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Mental Health App',
-  description: 'Mental health support application',
+  title: 'Joynous',
+  description: 'A place to meet your kind of people',
 };
 
 export default function RootLayout({
