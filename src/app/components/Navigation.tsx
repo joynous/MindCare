@@ -28,7 +28,7 @@ export default function Navigation() {
             className="hover:opacity-80 transition-opacity"
             onClick={() => setIsMenuOpen(false)}
           >
-            Joynous
+            <img src='favicon.png' height={50} width={50}/>
           </Link>
         </span>
 

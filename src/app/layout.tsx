@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'Joynous',
   description: 'A place to meet your kind of people',
   icons : {
-    icon: '/favicon.',
+    icon: '/favicon.png',
     apple: '/favicon-apple.png'
   }
 };

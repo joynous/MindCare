@@ -27,7 +27,7 @@ export default function Home() {
       <motion.section 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="container mx-auto px-4 py-16 text-center relative overflow-hidden"
+        className="container mt-10 mx-auto px-4 py-16 text-center relative overflow-hidden"
       >
         {/* Floating Background Elements */}
         <motion.div
