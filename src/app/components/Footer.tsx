@@ -44,7 +44,7 @@ export default function Footer() {
               <a href="https://chat.whatsapp.com/E8TtSo1ITfiJaAJx0d4nLl?fbclid=PAY2xjawJCFfhleHRuA2FlbQIxMQABppqLn9-EKFA-zcwhRWUHrO0me2uKv3__SjqQ2lEhYksuqzjYJZR-6pIxLA_aem_R4x79czzDf8tCbfQ4c9cjQ" target='_blank' className="p-2 bg-gray-800 rounded-full hover:bg-[#3AA3A0]">
                 <MessageCircle className="w-5 h-5" />
               </a>
-              <a href="mailTo:zenify32@gmail.com" target='_blank' className="p-2 bg-gray-800 rounded-full hover:bg-[#3AA3A0]">
+              <a href="mailTo:support@joynous.cc" target='_blank' className="p-2 bg-gray-800 rounded-full hover:bg-[#3AA3A0]">
                 <Mail className="w-5 h-5" />
               </a>
             </div>
