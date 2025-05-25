@@ -19,6 +19,7 @@ interface Event {
   speakers: Array<{ name: string; role: string; photo: string }>;
   totalseats: number;
   bookedseats: number;
+  payment_amount: number;
 }
 
 export default function EventDetailPage() {
@@ -194,7 +195,8 @@ export default function EventDetailPage() {
                   eventDate: event.eventdate,
                   eventVenue: event.eventvenue,
                   totalSeats: event.totalseats,
-                  bookedSeats: event.bookedseats
+                  bookedSeats: event.bookedseats,
+                  paymentAmount: event.payment_amount
                 }}
               />
             </motion.div>

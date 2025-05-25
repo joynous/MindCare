@@ -91,8 +91,7 @@ export default function AboutPage() {
             className="inline-block"
           >
             <Link
-              href="https://docs.google.com/forms/d/1HBYyI0L43N-kTbfaUspzQwk-K8O81a6xPEiflmCbOWw/viewform?edit_requested=true"
-              target='_blank'
+              href="/events"
               className="bg-[#F7D330] text-[#1A2E35] px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] transition-colors"
             >
               Find Your First Event

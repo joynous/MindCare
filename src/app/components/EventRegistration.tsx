@@ -17,6 +17,7 @@ export interface EventData {
   eventVenue: string;
   totalSeats: number;
   bookedSeats: number;
+  paymentAmount: number;
 }
 
 const EventRegistration = ({ event }: { event: EventData }) => {
@@ -167,11 +168,11 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 <p className="text-gray-600">Date: {new Date(event.eventDate).toLocaleDateString()}</p>
                 <p className="text-gray-600">Venue: {event.eventVenue}</p>
                 <p className="text-gray-600">Available Seats: {event.totalSeats - event.bookedSeats}</p>
-                <p className="text-gray-600 mt-2">Price: ₹499</p>
+                <p className="text-gray-600 mt-2">Price: {event.paymentAmount}</p>
               </div>
 
               <PaymentButton
-                amount={5}
+                amount={event.paymentAmount}
                 status={paymentStatus}
                 eventData={event}
                 formData={formData}
