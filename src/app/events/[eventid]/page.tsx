@@ -50,22 +50,22 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] to-[#8AE2E0]/10 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3AA3A0]"></div>
+      <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] dark:from-[#F7FFF7]/95 to-[#8AE2E0]/10 dark:to-[#8AE2E0]/20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3AA3A0] dark:border-[#2DB4AF]"></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] to-[#8AE2E0]/10 flex items-center justify-center">
-        <h1 className="text-2xl text-[#1A2E35]">Event not found</h1>
+      <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] dark:from-[#F7FFF7]/95 to-[#8AE2E0]/10 dark:to-[#8AE2E0]/20 flex items-center justify-center">
+        <h1 className="text-2xl text-[#1A2E35] dark:text-[#E5E7EB]">Event not found</h1>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] to-[#8AE2E0]/10">
+    <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50">
       {/* Hero Section */}
       <motion.div 
         className="relative h-96"
@@ -74,7 +74,7 @@ export default function EventDetailPage() {
         transition={{ duration: 0.5 }}
       >
         <Image
-          src={`/images/events/event-${Math.floor(Math.random()*(28))+1}.webp`}
+          src={`/images/events/event-header.jpg`}
           alt={event.eventname}
           fill
           className="object-cover"
@@ -117,10 +117,10 @@ export default function EventDetailPage() {
             <motion.section 
               initial={{ x: -20 }}
               animate={{ x: 0 }}
-              className="bg-white p-8 rounded-2xl shadow-lg"
+              className="bg-white dark:bg-[#1F2937] p-8 rounded-2xl shadow-lg"
             >
-              <h2 className="text-3xl font-bold mb-6 text-[#1A2E35]">About This Event</h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <h2 className="text-3xl font-bold mb-6 text-[#1A2E35] dark:text-[#E5E7EB]">About This Event</h2>
+              <p className="text-lg text-gray-600 dark:text-[#9CA3AF] leading-relaxed">
                 {event.description}
               </p>
             </motion.section>
@@ -128,23 +128,23 @@ export default function EventDetailPage() {
             {/* Schedule Section */}
             {event.schedule && (
               <motion.section 
-                className="bg-white p-8 rounded-2xl shadow-lg"
+                className="bg-white dark:bg-[#1F2937] p-8 rounded-2xl shadow-lg"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <h2 className="text-3xl font-bold mb-6 text-[#1A2E35]">Event Schedule</h2>
+                <h2 className="text-3xl font-bold mb-6 text-[#1A2E35] dark:text-[#E5E7EB]">Event Schedule</h2>
                 <div className="space-y-6">
                   {event.schedule.map((item, index) => (
                     <div 
                       key={index}
-                      className="flex gap-6 p-4 hover:bg-[#F7FFF7] rounded-xl transition-colors"
+                      className="flex gap-6 p-4 hover:bg-[#F7FFF7] dark:hover:bg-[#374151] rounded-xl transition-colors"
                     >
                       <div className="flex-shrink-0">
-                        <Clock className="w-8 h-8 text-[#3AA3A0]" />
+                        <Clock className="w-8 h-8 text-[#3AA3A0] dark:text-[#2DB4AF]" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">{item.time} - {item.title}</h3>
-                        <p className="text-gray-600 mt-1">{item.description}</p>
+                        <h3 className="text-xl font-semibold dark:text-[#E5E7EB]">{item.time} - {item.title}</h3>
+                        <p className="text-gray-600 dark:text-[#9CA3AF] mt-1">{item.description}</p>
                       </div>
                     </div>
                   ))}
@@ -155,14 +155,14 @@ export default function EventDetailPage() {
             {/* Speakers Section */}
             {event.speakers && (
               <motion.section 
-                className="bg-white p-8 rounded-2xl shadow-lg"
+                className="bg-white dark:bg-[#1F2937] p-8 rounded-2xl shadow-lg"
                 initial={{ scale: 0.98 }}
                 animate={{ scale: 1 }}
               >
-                <h2 className="text-3xl font-bold mb-8 text-[#1A2E35]">Event captains</h2>
+                <h2 className="text-3xl font-bold mb-8 text-[#1A2E35] dark:text-[#E5E7EB]">Event captains</h2>
                 <div className="grid md:grid-cols-2 gap-8">
                   {event.speakers.map((speaker, index) => (
-                    <div key={index} className="flex items-center gap-6 p-4 bg-[#F7FFF7] rounded-xl">
+                    <div key={index} className="flex items-center gap-6 p-4 bg-[#F7FFF7] dark:bg-[#374151] rounded-xl">
                       <Image
                         src={speaker.photo}
                         alt={speaker.name}
@@ -171,8 +171,8 @@ export default function EventDetailPage() {
                         className="rounded-full object-cover"
                       />
                       <div>
-                        <h3 className="text-xl font-semibold">{speaker.name}</h3>
-                        <p className="text-gray-600">{speaker.role}</p>
+                        <h3 className="text-xl font-semibold dark:text-[#E5E7EB]">{speaker.name}</h3>
+                        <p className="text-gray-600 dark:text-[#9CA3AF]">{speaker.role}</p>
                       </div>
                     </div>
                   ))}
@@ -184,7 +184,7 @@ export default function EventDetailPage() {
           {/* Registration Column */}
           <div className="lg:col-span-1">
             <motion.div 
-              className="bg-white p-8 rounded-2xl shadow-xl sticky top-8"
+              className="bg-white dark:bg-[#1F2937] p-8 rounded-2xl shadow-xl sticky top-8"
               initial={{ y: 20 }}
               animate={{ y: 0 }}
             >

@@ -67,34 +67,36 @@ const EventRegistration = ({ event }: { event: EventData }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#1A2E35]">Register Now</h2>
+      <h2 className="text-2xl font-bold text-[#1A2E35] dark:text-[#E5E7EB]">Register Now</h2>
       
       <div className="flex gap-4 mb-6">
         {[1, 2].map((step) => (
           <div 
             key={step}
-            className={`h-2 w-16 rounded-full ${currentStep >= step ? 'bg-[#3AA3A0]' : 'bg-gray-200'}`}
+            className={`h-2 w-16 rounded-full ${currentStep >= step ? 
+              'bg-[#3AA3A0] dark:bg-[#2DB4AF]' : 
+              'bg-gray-200 dark:bg-gray-600'}`}
           />
         ))}
       </div>
 
       {paymentStatus === 'success' ? (
         <motion.div 
-          className="text-center p-6 bg-green-50 rounded-xl"
+          className="text-center p-6 bg-green-50 dark:bg-green-900 rounded-xl"
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
         >
-          <h3 className="text-xl font-bold text-green-600 mb-2">🎉 Registration Successful!</h3>
-          <p className="text-green-700">Check your email for confirmation details.</p>
+          <h3 className="text-xl font-bold text-green-600 dark:text-green-300 mb-2">🎉 Registration Successful!</h3>
+          <p className="text-green-700 dark:text-green-200">Check your email for confirmation details.</p>
         </motion.div>
       ) : paymentStatus === 'error' ? (
         <motion.div 
-          className="text-center p-6 bg-red-50 rounded-xl"
+          className="text-center p-6 bg-red-50 dark:bg-red-900 rounded-xl"
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
         >
-          <h3 className="text-xl font-bold text-red-600 mb-2">⚠️ Payment Failed</h3>
-          <p className="text-red-700">
+          <h3 className="text-xl font-bold text-red-600 dark:text-red-300 mb-2">⚠️ Payment Failed</h3>
+          <p className="text-red-700 dark:text-red-200">
             Please try again. Any deducted amount will be refunded within 5-7 business days.
           </p>
         </motion.div>
@@ -107,19 +109,20 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium mb-2">Full Name</label>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">Full Name</label>
                 <input
                   {...register('name', { 
                     required: true,
                     onChange: (e) => handleFormChange('name', e.target.value)
                   })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0]"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
                   placeholder="Enter your full name"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">Email</label>
                 <input
                   type="email"
                   {...register('email', { 
@@ -127,13 +130,14 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     pattern: /^\S+@\S+\.\S+$/,
                     onChange: (e) => handleFormChange('email', e.target.value)
                   })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0]"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
                   placeholder="your@email.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Phone</label>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">Phone</label>
                 <input
                   type="tel"
                   {...register('phone', { 
@@ -141,7 +145,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     pattern: /^[6-9]\d{9}$/,
                     onChange: (e) => handleFormChange('phone', e.target.value)
                   })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0]"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
                   placeholder="10-digit phone number"
                 />
               </div>
@@ -149,7 +154,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="w-full bg-[#3AA3A0] text-white py-3 rounded-lg hover:bg-[#2E827F] transition-colors"
+                className="w-full bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white py-3 rounded-lg 
+                  hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors"
               >
                 Continue to Payment
               </button>
@@ -162,13 +168,13 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               animate={{ opacity: 1, x: 0 }}
               className="space-y-6"
             >
-              <div className="bg-[#F7FFF7] p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">Registration Summary</h4>
-                <p className="text-gray-600">Event: {event.eventName}</p>
-                <p className="text-gray-600">Date: {new Date(event.eventDate).toLocaleDateString()}</p>
-                <p className="text-gray-600">Venue: {event.eventVenue}</p>
-                <p className="text-gray-600">Available Seats: {event.totalSeats - event.bookedSeats}</p>
-                <p className="text-gray-600 mt-2">Price: {event.paymentAmount}</p>
+              <div className="bg-[#F7FFF7] dark:bg-[#1F2937] p-4 rounded-lg">
+                <h4 className="font-semibold mb-2 dark:text-[#E5E7EB]">Registration Summary</h4>
+                <p className="text-gray-600 dark:text-[#9CA3AF]">Event: {event.eventName}</p>
+                <p className="text-gray-600 dark:text-[#9CA3AF]">Date: {new Date(event.eventDate).toLocaleDateString()}</p>
+                <p className="text-gray-600 dark:text-[#9CA3AF]">Venue: {event.eventVenue}</p>
+                <p className="text-gray-600 dark:text-[#9CA3AF]">Available Seats: {event.totalSeats - event.bookedSeats}</p>
+                <p className="text-gray-600 dark:text-[#9CA3AF] mt-2">Price: {event.paymentAmount}</p>
               </div>
 
               <PaymentButton
@@ -186,7 +192,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(1)}
-                className="text-[#3AA3A0] hover:underline mt-4"
+                className="text-[#3AA3A0] dark:text-[#2DB4AF] hover:underline mt-4"
               >
                 ← Back to Details
               </button>

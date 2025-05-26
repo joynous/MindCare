@@ -11,7 +11,7 @@ export default function Navigation() {
 
   const navLinks = [
     { name: 'Home', href: '/', icon: <SmilePlus size={20} /> },
-    { name: 'Assessor', href: '/assessor', icon: <BrainCircuit size={20} /> },
+    { name: 'Mental Health check', href: '/assessor', icon: <BrainCircuit size={20} /> },
     // { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
     { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
     { name: 'Create event', href: '/admin/events/new', icon: <SquareActivity size={20} /> },

@@ -122,7 +122,7 @@ export default function EventCreationForm() {
   const minDateString = minDate.toISOString().split('T')[0];
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg mt-8">
+    <div className="mx-auto p-6 bg-white rounded-xl shadow-lg mt-8">
       <motion.h1 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

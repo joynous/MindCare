@@ -1,4 +1,3 @@
-// app/about/page.tsx
 'use client';
 import { motion } from 'framer-motion';
 import { HeartHandshake, Sparkles, Trophy } from 'lucide-react';
@@ -24,7 +23,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F7FFF7] to-[#8AE2E0]/10">
+    <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50">
       {/* Hero Section */}
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
@@ -34,7 +33,7 @@ export default function AboutPage() {
         <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-[#3AA3A0] to-[#F7D330] bg-clip-text text-transparent mb-6">
           Our Story
         </h1>
-        <p className="text-xl text-[#1A2E35] max-w-3xl mx-auto">
+        <p className="text-xl text-[#1A2E35] dark:text-[#1A2E35]/90 max-w-3xl mx-auto">
           From a small group of friends to a nationwide movement fostering real human connections
         </p>
       </motion.section>
@@ -43,10 +42,10 @@ export default function AboutPage() {
       <motion.section 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        className="bg-[#3AA3A0]/10 py-12"
+        className="bg-[#3AA3A0]/10 dark:bg-[#3AA3A0]/20 py-12"
       >
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#1A2E35] mb-12 text-center">
+          <h2 className="text-3xl font-bold text-[#1A2E35] dark:text-[#1A2E35]/90 mb-12 text-center">
             Core Values
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -56,20 +55,20 @@ export default function AboutPage() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 transition={{ delay: index * 0.2 }}
-                className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+                className="bg-white dark:bg-white/90 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
               >
                 <div className="flex justify-center mb-4">
                   <motion.div
                     whileHover={{ rotate: 360, scale: 1.1 }}
-                    className="bg-[#F7D330] p-3 rounded-full"
+                    className="bg-[#F7D330] dark:bg-[#F7D330]/90 p-3 rounded-full"
                   >
                     {value.icon}
                   </motion.div>
                 </div>
-                <h3 className="text-xl font-semibold text-center mb-2">
+                <h3 className="text-xl font-semibold text-center mb-2 text-[#1A2E35] dark:text-[#1A2E35]/90">
                   {value.title}
                 </h3>
-                <p className="text-gray-600 text-center">{value.text}</p>
+                <p className="text-gray-600 dark:text-[#1A2E35]/80 text-center">{value.text}</p>
               </motion.div>
             ))}
           </div>
@@ -80,7 +79,7 @@ export default function AboutPage() {
       <motion.section 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        className="bg-[#1A2E35] text-[#F7FFF7] py-16 mt-12"
+        className="bg-[#1A2E35] dark:bg-[#1A2E35]/90 text-[#F7FFF7] dark:text-[#F7FFF7]/90 py-16 mt-12"
       >
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">
@@ -92,7 +91,7 @@ export default function AboutPage() {
           >
             <Link
               href="/events"
-              className="bg-[#F7D330] text-[#1A2E35] px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] transition-colors"
+              className="bg-[#F7D330] dark:bg-[#F7D330]/90 text-[#1A2E35] dark:text-[#1A2E35]/90 px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] dark:hover:bg-[#F7D330]/80 transition-colors"
             >
               Find Your First Event
             </Link>
