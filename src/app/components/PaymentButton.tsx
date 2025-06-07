@@ -1,3 +1,4 @@
+// src/app/components/PaymentButton.tsx
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,7 @@ interface PaymentButtonProps {
     event: string;
   };
   eventData: EventData;
+  couponCode?: string; // Add couponCode prop
   onValidate?: () => Promise<boolean>;
   onProcessing?: () => void;
   onSuccess?: (paymentId: string) => void;
@@ -35,6 +37,7 @@ export default function PaymentButton({
   onRetry,
   formData,
   eventData,
+  couponCode, // Destructure couponCode
   onValidate,
   onProcessing,
   onSuccess
@@ -62,12 +65,14 @@ export default function PaymentButton({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Insert registration data including couponCode
       const { data: registration, error: dbError } = await supabase
         .from('registrations')
         .insert({
           ...formData,
           user_id: user?.id,
-          status: 'pending'
+          status: 'pending',
+          coupon_used: couponCode || null, // Add coupon_code to the insert
         })
         .select()
         .single();
@@ -78,18 +83,19 @@ export default function PaymentButton({
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: amount * 100,
         currency: 'INR',
-        name: 'MindCare Community',
+        name: 'Joynous Community',
         description: `Registration for ${formData?.event || 'event'}`,
         prefill: {
           name: formData?.name || '',
           email: formData?.email || '',
           contact: formData?.phone || ''
         },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handler: async (response: any) => {
           try {
             onProcessing?.();
             
+            // Include couponCode in the request to verify-payment
             const captureResult = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -97,7 +103,8 @@ export default function PaymentButton({
                 paymentId: response.razorpay_payment_id,
                 eventId: eventData.eventId,
                 registrationId: registration.id,
-                amount: amount
+                amount: amount,
+                couponCode: couponCode // Pass couponCode to the API
               })
             });
 

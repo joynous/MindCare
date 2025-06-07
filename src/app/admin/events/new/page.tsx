@@ -252,6 +252,9 @@ export default function EventCreationForm() {
             rows={4}
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
           />
+          <p className="text-sm text-gray-500 mt-1">
+            Note: Line breaks and spaces will be preserved. Links will be clickable.
+          </p>
           {errors.description && (
             <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
           )}

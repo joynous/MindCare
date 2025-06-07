@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       throw new Error('Email service configuration is missing');
     }
 
-    const { paymentId, registrationId, amount, eventId} = await req.json();
+    const { paymentId, registrationId, amount, eventId, couponCode } = await req.json();
     
     //1. Check available seats
     const { data: eventData, error: eventError } = await supabase
@@ -73,7 +73,8 @@ export async function POST(req: Request) {
         payment_id: paymentId,
         status: 'captured',
         amount: amount,
-        event: eventId
+        event: eventId,
+        coupon_used: couponCode || null
       })
       .eq('id', registrationId);
 
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
       sendSmtpEmail.to = [{ email: registration.email, name: registration.name }];
       sendSmtpEmail.sender = { 
         email: process.env.SENDER_EMAIL,
-        name: 'Mental Health Community' 
+        name: 'Joynous Community' 
       };
       sendSmtpEmail.subject = `Registration Confirmed: ${eventData.eventname}`;
       sendSmtpEmail.htmlContent = `<!DOCTYPE html>
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
     <div class="container">
         <!-- Header Section -->
         <div class="header">
-            <img src="[Your-Logo-URL]" class="logo" alt="Joynous Logo">
+            <img src="favicon.png" class="logo" alt="Joynous Logo">
         </div>
 
         <!-- Main Content -->

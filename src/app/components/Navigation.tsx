@@ -1,9 +1,8 @@
-// components/Navigation.tsx
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BrainCircuit, HeartPulse, SmilePlus, Menu, X, Camera, SquareActivity } from 'lucide-react';
+import { BrainCircuit, HeartPulse, SmilePlus, Menu, X, Camera } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -14,13 +13,13 @@ export default function Navigation() {
     { name: 'Mental Health check', href: '/assessor', icon: <BrainCircuit size={20} /> },
     // { name: 'Blogs', href: '/blogs', icon: <PenBox size={20} /> },
     { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
-    { name: 'Create event', href: '/admin/events/new', icon: <SquareActivity size={20} /> },
+    // { name: 'Create event', href: '/admin/events/new', icon: <SquareActivity size={20} /> },
     { name: 'Gallery', href: '/gallery', icon: <Camera size={20} /> },
   ];
 
   return (
-    <nav className="bg-[#F9BF04]/80 backdrop-blur-md border-b border-gray-100 fixed w-full top-0 z-50">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <nav className="bg-[#F9BF04]/80 backdrop-blur-md border-b border-gray-100 fixed w-full top-0 z-50 h-16"> {/* Fixed height */}
+      <div className="container mx-auto px-4 h-full flex items-center justify-between"> {/* Added h-full */}
         {/* Brand Logo with Link */}
         <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
           <Link 
@@ -28,7 +27,7 @@ export default function Navigation() {
             className="hover:opacity-80 transition-opacity"
             onClick={() => setIsMenuOpen(false)}
           >
-            <img src='favicon.png' height={50} width={50}/>
+            <img src='/favicon.png' height={40} width={40}/> {/* Reduced size */}
           </Link>
         </span>
 
@@ -57,9 +56,11 @@ export default function Navigation() {
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+      </div>
 
-        {/* Mobile Navigation */}
-        <div className={`md:hidden absolute top-full left-0 right-0 bg-white shadow-lg ${isMenuOpen ? 'block' : 'hidden'}`}>
+      {/* Mobile Navigation - Moved outside main nav container */}
+      <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
+        <div className="bg-white shadow-lg">
           <div className="px-4 py-3 space-y-2">
             {navLinks.map((link) => (
               <Link

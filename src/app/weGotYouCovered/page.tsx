@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sparkles, Users, Activity, Heart, Calendar } from 'lucide-react';
+import { Sparkles, Users, Activity, Heart, Calendar, ChevronDown } from 'lucide-react';
 
 export default function WeGotYouCoveredPage() {
   const problems = [
@@ -38,42 +38,208 @@ export default function WeGotYouCoveredPage() {
     { id: 4, src: "/images/events/event-1.webp", alt: "Machine game" }
   ];
 
+  // Floating animation variants
+  const floatingVariants = {
+    float: {
+      y: [0, -15, 0],
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
+  };
+
+  // Image collage positions
+  const imagePositions = [
+    { top: "15%", left: "5%", rotate: -5, width: "30%" },
+    { top: "10%", right: "5%", rotate: 3, width: "35%" },
+    { bottom: "20%", left: "12%", rotate: 2, width: "32%" },
+    { bottom: "15%", right: "8%", rotate: -4, width: "28%" }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 py-12">
-      {/* Hero Section */}
-      <motion.section 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="container mx-auto px-4 py-12 text-center"
-      >
-        <motion.h1 
-          initial={{ y: 20 }}
-          animate={{ y: 0 }}
-          className="text-4xl md:text-5xl font-bold mb-6"
-        >
-          <span className="bg-gradient-to-r from-[#3AA3A0] to-[#F7D330] bg-clip-text text-transparent">
-            Weekend Loneliness?
-          </span>
-          <br />
-          <span className="text-[#1A2E35]">We&apos;ve Got Your Back</span>
-        </motion.h1>
-        
-        <motion.p
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
+      {/* Enhanced Hero Section with Image Collage */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background Elements */}
+        <motion.div 
+          className="absolute inset-0 z-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-xl text-[#1A2E35] max-w-2xl mx-auto mb-12"
+          transition={{ duration: 1 }}
         >
-          Transforming solitary weekends into meaningful connections
-        </motion.p>
-      </motion.section>
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1A2E35]/50 to-[#1A2E35]/20 md:from-[#3AA3A0]/10 md:to-[#F7D330]/10"></div>
+          
+          {/* Floating circles */}
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                top: `${15 + Math.random() * 70}%`,
+                left: `${Math.random() * 100}%`,
+                width: `${20 + Math.random() * 100}px`,
+                height: `${20 + Math.random() * 100}px`,
+                background: i % 2 === 0 
+                  ? 'radial-gradient(circle, #3AA3A0 0%, transparent 70%)' 
+                  : 'radial-gradient(circle, #F7D330 0%, transparent 70%)',
+                opacity: 0.1 + Math.random() * 0.2
+              }}
+              variants={floatingVariants}
+              animate="float"
+            />
+          ))}
+          
+          {/* Image Collage - Hidden on mobile */}
+          <div className="hidden md:block">
+            {galleryImages.map((image, index) => (
+              <motion.div
+                key={image.id}
+                className="absolute rounded-2xl shadow-2xl overflow-hidden border-4 border-white"
+                style={{
+                  ...imagePositions[index],
+                  aspectRatio: "3/4",
+                  zIndex: index + 1,
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                }}
+                initial={{ opacity: 0, scale: 0.8, rotate: imagePositions[index].rotate + 10 }}
+                animate={{ opacity: 1, scale: 1, rotate: imagePositions[index].rotate }}
+                transition={{ 
+                  duration: 0.8,
+                  delay: 0.3 * index,
+                  type: "spring",
+                  stiffness: 100
+                }}
+                whileHover={{ 
+                  zIndex: 10,
+                  scale: 1.05,
+                  rotate: imagePositions[index].rotate + (index % 2 === 0 ? -2 : 2),
+                  transition: { duration: 0.3 }
+                }}
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  className="object-cover"
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
+        {/* Mobile background image */}
+        <div className="md:hidden absolute inset-0 z-0">
+          <Image
+            src="/images/events/event-21.webp"
+            alt="Community event background"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1A2E35]/70 to-[#1A2E35]/40"></div>
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 relative z-20 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.h1 
+              className="text-5xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                duration: 0.8,
+                delay: 0.2
+              }}
+            >
+              <span className="block bg-gradient-to-r from-[#F7D330] to-[#3AA3A0] bg-clip-text text-transparent mb-2">
+                Tired of Lonely Weekends?
+              </span>
+              <span className="block text-white text-4xl md:text-5xl mt-4 drop-shadow">
+                We&apos;ve Got Your Back
+              </span>
+            </motion.h1>
+            
+            <motion.p
+              className="text-xl md:text-2xl text-white max-w-2xl mx-auto mb-10 drop-shadow"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Transform solitary weekends into meaningful connections through fun activities
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-col sm:flex-row justify-center gap-4"
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  href="/events"
+                  className="bg-[#3AA3A0] hover:bg-[#2E827F] text-white px-8 py-4 rounded-full text-lg md:text-xl font-bold transition-colors flex items-center gap-3"
+                >
+                  <Calendar className="w-6 h-6" />
+                  Join Our Next Event
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  href="#solution"
+                  className="bg-white hover:bg-gray-100 text-[#1A2E35] border border-[#3AA3A0] px-8 py-4 rounded-full text-lg md:text-xl font-bold transition-colors flex items-center gap-3"
+                >
+                  Learn How It Works
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
+        
+        {/* Scroll indicator */}
+        <motion.div 
+          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+        >
+          <motion.div
+            animate={{ 
+              y: [0, 10, 0],
+              opacity: [1, 0.7, 1]
+            }}
+            transition={{ 
+              duration: 1.5,
+              repeat: Infinity,
+              repeatType: "loop"
+            }}
+          >
+            <ChevronDown className="w-10 h-10 text-white animate-bounce" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Rest of the page remains the same */}
       {/* Problem Section */}
       <motion.section 
+        id="problem"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        className="container mx-auto px-4 py-12"
+        viewport={{ once: true }}
+        className="container mx-auto px-4 py-12 md:py-24"
       >
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto border border-orange-100">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto border border-orange-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-red-100 p-2 rounded-full">
               <div className="bg-red-500 w-6 h-6 rounded-full flex items-center justify-center">
@@ -112,11 +278,13 @@ export default function WeGotYouCoveredPage() {
 
       {/* Solution Section */}
       <motion.section 
+        id="solution"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        className="container mx-auto px-4 py-12"
+        viewport={{ once: true }}
+        className="container mx-auto px-4 py-12 md:py-24"
       >
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto border border-orange-100">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto border border-orange-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-green-100 p-2 rounded-full">
               <div className="bg-green-500 w-6 h-6 rounded-full flex items-center justify-center">
@@ -187,7 +355,8 @@ export default function WeGotYouCoveredPage() {
       <motion.section 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        className="container mx-auto px-4 py-12"
+        viewport={{ once: true }}
+        className="container mx-auto px-4 py-12 md:py-24"
       >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-[#1A2E35] mb-8 text-center">
@@ -221,7 +390,8 @@ export default function WeGotYouCoveredPage() {
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        className="container mx-auto px-4 py-12 text-center"
+        viewport={{ once: true }}
+        className="container mx-auto px-4 py-12 md:py-24 text-center"
       >
         <div className="bg-[#3AA3A0] rounded-2xl p-8 max-w-2xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-4">

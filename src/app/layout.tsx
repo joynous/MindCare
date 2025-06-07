@@ -22,9 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className}`}>
         <Navigation />
-        <main className="container mx-auto">
+        <main className="container mx-auto pt-4 md:pt-20"> {/* Added top padding */}
           {children}
         </main>
         <Footer />

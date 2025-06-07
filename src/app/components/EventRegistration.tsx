@@ -1,8 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PaymentButton from './PaymentButton';
 import { useForm } from 'react-hook-form';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 type FormData = {
   name: string;
@@ -35,6 +36,34 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     phone: '',
     event: event.eventId
   });
+  
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discount: number} | null>(null);
+  const [couponError, setCouponError] = useState('');
+  const [isEarlyBirdEligible, setIsEarlyBirdEligible] = useState(true);
+
+  // Calculate prices
+  const originalPrice = event.paymentAmount;
+  const discount = appliedCoupon ? appliedCoupon.discount : 0;
+  const finalPrice = Math.max(0, originalPrice - discount);
+  
+  // Check if event is in the future (within 7 days) for early bird eligibility
+  useEffect(() => {
+    const eventDate = new Date(event.eventDate);
+    const today = new Date();
+    const timeDiff = eventDate.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    setIsEarlyBirdEligible(daysDiff >= 2);
+  }, [event.eventDate]);
+
+  // Apply early bird discount by default if eligible
+  useEffect(() => {
+    if (isEarlyBirdEligible) {
+      setAppliedCoupon({ code: 'EARLYBIRD', discount: 150 });
+    }
+  }, [isEarlyBirdEligible]);
 
   const handleFormChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
@@ -63,6 +92,40 @@ const EventRegistration = ({ event }: { event: EventData }) => {
 
   const handleRetry = () => {
     setPaymentStatus('idle');
+  };
+
+  const applyCoupon = () => {
+    setCouponError('');
+    
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+    
+    const code = couponCode.trim().toUpperCase();
+    
+    if (code === 'EARLYBIRD') {
+      if (!isEarlyBirdEligible) {
+        setCouponError('Early bird discount has expired for this event');
+        return;
+      }
+      setAppliedCoupon({ code, discount: 150 });
+    } 
+    else if (code === 'FRIEND10') {
+      setAppliedCoupon({ code, discount: Math.min(100, originalPrice * 0.1) });
+    }
+    else if (code === 'WELCOME25') {
+      setAppliedCoupon({ code, discount: Math.min(200, originalPrice * 0.25) });
+    }
+    else {
+      setCouponError('Invalid coupon code');
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
   };
 
   return (
@@ -173,8 +236,89 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Event: {event.eventName}</p>
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Date: {new Date(event.eventDate).toLocaleDateString()}</p>
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Venue: {event.eventVenue}</p>
-                <p className="text-gray-600 dark:text-[#9CA3AF]">Available Seats: {event.totalSeats - event.bookedSeats}</p>
-                <p className="text-gray-600 dark:text-[#9CA3AF] mt-2">Price: {event.paymentAmount}</p>
+                
+                <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-600">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">Original Price:</span>
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">₹{originalPrice}</span>
+                  </div>
+                  
+                  {appliedCoupon && (
+                    <div className="flex justify-between mb-1">
+                      <div className="flex items-center">
+                        <span className="text-gray-600 dark:text-[#9CA3AF]">Discount ({appliedCoupon.code}):</span>
+                        <button 
+                          onClick={removeCoupon}
+                          className="ml-2 text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <span className="text-green-600 dark:text-green-400">-₹{appliedCoupon.discount}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between font-semibold mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                    <span className="text-[#1A2E35] dark:text-[#E5E7EB]">Total Amount:</span>
+                    <span className="text-[#1A2E35] dark:text-[#E5E7EB]">₹{finalPrice}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Coupon Section */}
+              <div className="bg-[#F7FFF7] dark:bg-[#1F2937] p-4 rounded-lg">
+                <h4 className="font-semibold mb-3 dark:text-[#E5E7EB]">Apply Coupon</h4>
+                
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    placeholder="Enter coupon code"
+                    className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                      dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyCoupon}
+                    className="bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white px-4 rounded-lg 
+                      hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+                
+                {couponError && (
+                  <div className="flex items-center mt-2 text-red-500">
+                    <XCircle className="w-4 h-4 mr-1" />
+                    <span className="text-sm">{couponError}</span>
+                  </div>
+                )}
+                
+                {appliedCoupon && (
+                  <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Coupon applied successfully!</span>
+                  </div>
+                )}
+                
+                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                  <p className="font-medium mb-1">Available coupons:</p>
+                  <ul className="space-y-1">
+                    <li className="flex items-center">
+                      <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded mr-2">EARLYBIRD</span>
+                      <span>₹150 off (applied automatically)</span>
+                    </li>
+                    <li className="flex items-center">
+                      <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded mr-2">FRIEND10</span>
+                      <span>10% off (max ₹100)</span>
+                    </li>
+                    <li className="flex items-center">
+                      <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded mr-2">WELCOME25</span>
+                      <span>25% off (max ₹200)</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <PaymentButton
@@ -182,6 +326,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 status={paymentStatus}
                 eventData={event}
                 formData={formData}
+                couponCode={appliedCoupon?.code}
                 onValidate={validateForm}
                 onProcessing={handlePaymentProcessing}
                 onSuccess={handlePaymentSuccess}
