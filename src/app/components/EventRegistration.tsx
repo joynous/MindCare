@@ -322,7 +322,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               </div>
 
               <PaymentButton
-                amount={event.paymentAmount}
+                amount={finalPrice}
                 status={paymentStatus}
                 eventData={event}
                 formData={formData}

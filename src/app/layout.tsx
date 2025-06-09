@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className}`}>
         <Navigation />
-        <main className="container mx-auto pt-4 md:pt-20"> {/* Added top padding */}
+        <main className="container mx-auto pt-4 md:pt-0"> {/* Added top padding */}
           {children}
         </main>
         <Footer />

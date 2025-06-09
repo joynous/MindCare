@@ -182,7 +182,7 @@ export default function EventDetailPage() {
                   {event.speakers.map((speaker, index) => (
                     <div key={index} className="flex items-center gap-4 p-3 md:p-4 bg-[#F7FFF7] dark:bg-[#374151] rounded-lg">
                       <Image
-                        src={speaker.name === "Rohit Bora" ? "/images/rohit.jpeg" : "/images/vivek.jpeg"}
+                        src={`/images/${speaker.name}.jpeg`}
                         alt={speaker.name}
                         width={80}
                         height={80}
