@@ -2,7 +2,7 @@ const images = [
     { id: 1, src: '/images/events/event-1.webp', alt: 'Outdoor physical activities' },
     { id: 2, src: '/images/events/event-2.webp', alt: 'Outdoor group activities' },
     { id: 3,src: '/images/events/event-3.webp', alt: 'chit picking activity' },
-    { id: 4,src: '/images/events/event-4.webp', alt: 'Outdoor group activities' },
+    { id: 4,src: '/images/events/event-4.jpg', alt: 'Outdoor group activities' },
     { id: 5,src: '/images/events/event-5.webp', alt: 'Outdoor group activities' },
     { id: 6,src: '/images/events/event-6.webp', alt: 'pledge before ultra human activities' },
     { id: 7,src: '/images/events/event-7.webp', alt: 'group game' },
@@ -18,11 +18,19 @@ const images = [
     { id: 17,src: '/images/events/event-17.webp', alt: 'group game' },
     { id: 18,src: '/images/events/event-18.webp', alt: 'group game' },
     { id: 19,src: '/images/events/event-19.webp', alt: 'group game' },
+    { id: 20,src: '/images/events/event-20.webp', alt: 'group game' },
     { id: 21,src: '/images/events/event-21.webp', alt: 'group game' },
     { id: 22, src: '/images/events/event-22.webp', alt: 'Outdoor physical activities' },
+    { id: 23, src: '/images/events/event-23.webp', alt: 'Outdoor physical activities' },
+    { id: 24, src: '/images/events/event-24.webp', alt: 'Outdoor physical activities' },
+    { id: 25, src: '/images/events/event-25.webp', alt: 'Outdoor physical activities' },
+    { id: 26, src: '/images/events/event-26.jpg', alt: 'Outdoor physical activities' },
     { id: 27,src: '/images/events/event-27.webp', alt: 'group game' },
     { id: 28,src: '/images/events/event-28.webp', alt: 'group game' },
     { id: 29,src: '/images/events/event-29.webp', alt: 'group game' },
+    { id: 30,src: '/images/events/event-30.jpg', alt: 'group game' },
+    { id: 31,src: '/images/events/event-31.jpg', alt: 'group game' },
+    { id: 32,src: '/images/events/event-32.jpg', alt: 'group game' },
   ];
   
 export const eventImages = images.sort((a,b) => b.id-a.id)
