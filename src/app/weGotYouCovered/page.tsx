@@ -34,7 +34,7 @@ export default function WeGotYouCoveredPage() {
   const galleryImages = [
     { id: 1, src: "/images/events/event-21.webp", alt: "express emotions in drawing" },
     { id: 2, src: "/images/events/event-3.webp", alt: "pick the cone" },
-    { id: 3, src: "/images/events/event-10.webp", alt: "3rd offline meetup" },
+    { id: 3, src: "/images/events/event-31.webp", alt: "3rd offline meetup" },
     { id: 4, src: "/images/events/event-1.webp", alt: "Machine game" }
   ];
 
