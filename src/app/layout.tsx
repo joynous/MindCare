@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Navigation from '../app/components/Navigation';
 import './globals.css';
 import Footer from './components/Footer';
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,6 +27,7 @@ export default function RootLayout({
         <Navigation />
         <main className="container mx-auto pt-4 md:pt-0"> {/* Added top padding */}
           {children}
+          <Analytics />
         </main>
         <Footer />
       </body>
