@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PaymentButton from './PaymentButton';
 import { useForm } from 'react-hook-form';
 import { CheckCircle, XCircle } from 'lucide-react';
@@ -41,7 +41,11 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discount: number} | null>(null);
   const [couponError, setCouponError] = useState('');
-  const [isEarlyBirdEligible, setIsEarlyBirdEligible] = useState(true);
+  const [isEarlyBirdEligible, setIsEarlyBirdEligible] = useState(false);
+  const [couponInfo, setCouponInfo] = useState<
+    Array<{code: string; discount: number; description: string; valid: boolean}>
+  >([]);
+  const skipAutoApply = useRef(false); // Track if auto-apply should be skipped
 
   // Calculate prices
   const originalPrice = event.paymentAmount;
@@ -55,15 +59,38 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     const timeDiff = eventDate.getTime() - today.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
     
-    setIsEarlyBirdEligible(daysDiff >= 2);
-  }, [event.eventDate]);
+    const earlyBirdEligible = daysDiff >= 1; // Changed to 1 day
+    setIsEarlyBirdEligible(earlyBirdEligible);
+    
+    // Initialize coupon info with validity status
+    setCouponInfo([
+      { 
+        code: 'EARLYBIRD', 
+        discount: 150, 
+        description: '₹150 off', 
+        valid: earlyBirdEligible 
+      },
+      { 
+        code: 'FRIEND10', 
+        discount: Math.min(100, originalPrice * 0.1), 
+        description: '10% off (max ₹100)', 
+        valid: true 
+      },
+      { 
+        code: 'WELCOME25', 
+        discount: Math.min(200, originalPrice * 0.25), 
+        description: '30% off (max ₹200)', 
+        valid: true 
+      }
+    ]);
+  }, [event.eventDate, originalPrice]);
 
-  // Apply early bird discount by default if eligible
+  // Apply early bird discount by default if eligible and not skipped
   useEffect(() => {
-    if (isEarlyBirdEligible) {
+    if (isEarlyBirdEligible && !appliedCoupon && !skipAutoApply.current) {
       setAppliedCoupon({ code: 'EARLYBIRD', discount: 150 });
     }
-  }, [isEarlyBirdEligible]);
+  }, [isEarlyBirdEligible, appliedCoupon]);
 
   const handleFormChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
@@ -94,28 +121,22 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     setPaymentStatus('idle');
   };
 
-  const applyCoupon = () => {
+  const applyCoupon = (code: string) => {
     setCouponError('');
+    const upperCode = code.toUpperCase();
     
-    if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
-      return;
-    }
-    
-    const code = couponCode.trim().toUpperCase();
-    
-    if (code === 'EARLYBIRD') {
+    if (upperCode === 'EARLYBIRD') {
       if (!isEarlyBirdEligible) {
         setCouponError('Early bird discount has expired for this event');
         return;
       }
-      setAppliedCoupon({ code, discount: 150 });
+      setAppliedCoupon({ code: upperCode, discount: 150 });
     } 
-    else if (code === 'FRIEND10') {
-      setAppliedCoupon({ code, discount: Math.min(100, originalPrice * 0.1) });
+    else if (upperCode === 'FRIEND10') {
+      setAppliedCoupon({ code: upperCode, discount: Math.min(100, originalPrice * 0.1) });
     }
-    else if (code === 'WELCOME25') {
-      setAppliedCoupon({ code, discount: Math.min(200, originalPrice * 0.25) });
+    else if (upperCode === 'WELCOME25') {
+      setAppliedCoupon({ code: upperCode, discount: Math.min(200, originalPrice * 0.30) });
     }
     else {
       setCouponError('Invalid coupon code');
@@ -126,6 +147,13 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     setAppliedCoupon(null);
     setCouponCode('');
     setCouponError('');
+    skipAutoApply.current = true; // Skip auto-apply after removal
+  };
+
+  // Function to handle coupon click
+  const handleCouponClick = (code: string) => {
+    setCouponCode(code);
+    applyCoupon(code);
   };
 
   return (
@@ -280,7 +308,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                   />
                   <button
                     type="button"
-                    onClick={applyCoupon}
+                    onClick={() => applyCoupon(couponCode)}
                     className="bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white px-4 rounded-lg 
                       hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors"
                   >
@@ -302,21 +330,24 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                   </div>
                 )}
                 
-                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                  <p className="font-medium mb-1">Available coupons:</p>
+                <div className="mt-3 text-sm">
+                  <p className="font-medium mb-1 dark:text-gray-300">Available coupons:</p>
                   <ul className="space-y-1">
-                    <li className="flex items-center">
-                      <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded mr-2">EARLYBIRD</span>
-                      <span>₹150 off (applied automatically)</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded mr-2">FRIEND10</span>
-                      <span>10% off (max ₹100)</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded mr-2">WELCOME25</span>
-                      <span>25% off (max ₹200)</span>
-                    </li>
+                    {couponInfo.map((coupon, index) => (
+                      <li 
+                        key={index}
+                        className={`flex items-center cursor-pointer p-2 rounded-lg transition-colors ${coupon.valid ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-60'}`}
+                        onClick={() => coupon.valid && handleCouponClick(coupon.code)}
+                      >
+                        <span className={`px-2 py-0.5 rounded mr-2 ${coupon.valid ? 'bg-[#3AA3A0] text-white' : 'bg-gray-300 text-gray-500'}`}>
+                          {coupon.code}
+                        </span>
+                        <span className={`${coupon.valid ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-500 line-through'}`}>
+                          {coupon.description}
+                          {coupon.code === 'EARLYBIRD' && !coupon.valid && ' (expired)'}
+                        </span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
