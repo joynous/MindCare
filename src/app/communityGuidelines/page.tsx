@@ -1,5 +1,5 @@
 'use client';
-import { ShieldAlert, Clock, Lock, Users, Heart, AlertCircle } from 'lucide-react';
+import { ShieldAlert, Clock, Lock, Users, Heart, AlertCircle, ListChecks, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function SafetyPage() {
@@ -7,32 +7,43 @@ export default function SafetyPage() {
         { 
           icon: <Users className="w-6 h-6" />, 
           title: "Respect for All", 
-          text: "Treat every individual with kindness and respect..."
+          text: "Treat every individual with kindness and respect. Harassment, hate speech, or stalking of any kind will not be tolerated." 
         },
         { 
-          icon: <Heart className="w-6 h-6" />,  // Changed from HeartHandshake
+          icon: <Heart className="w-6 h-6" />,
           title: "Safe Space", 
-          text: "This is a judgment-free zone..."
+          text: "This is a judgment-free zone. Please refrain from making derogatory remarks or sharing offensive content." 
         },
         { 
           icon: <Lock className="w-6 h-6" />, 
           title: "Privacy Matters", 
-          text: "Respect the privacy of others..."
+          text: "Respect the privacy of others. Do not share personal information or discussions outside the community without explicit consent." 
         },
         { 
           icon: <ShieldAlert className="w-6 h-6" />, 
-          title: "Zero Tolerance", 
-          text: "If a complaint is raised..."
+          title: "Zero Tolerance for Misconduct", 
+          text: "If a complaint is raised, we will thoroughly investigate the matter and take appropriate action." 
         },
         { 
           icon: <Clock className="w-6 h-6" />, 
           title: "Punctuality", 
-          text: "Be on time for events..."
+          text: "Be on time for events to ensure smooth participation for everyone." 
         },
         { 
-          icon: <AlertCircle className="w-6 h-6" />,  // Changed from MessageSquareWarning
+          icon: <AlertCircle className="w-6 h-6" />,
           title: "Participation", 
-          text: "Engage actively but respectfully..."
+          text: "Engage actively but respectfully during meetups, games, and discussions. Everyone deserves a chance to speak and be heard." 
+        },
+        // New policies added below
+        { 
+          icon: <ListChecks className="w-6 h-6" />, 
+          title: "Follow Event Guidelines", 
+          text: "Adhere to specific rules for games and activities as outlined during the event." 
+        },
+        { 
+          icon: <MessageCircle className="w-6 h-6" />, 
+          title: "Feedback Welcome", 
+          text: "Share constructive feedback to help us improve the community experience." 
         }
       ];
     
@@ -82,7 +93,7 @@ export default function SafetyPage() {
             Our Commitment
           </h2>
           <p className="text-gray-600">
-            By joining our community, you agree to follow these policies to create a 
+            By joining Joynous, you agree to follow these policies to create a 
             supportive and enjoyable space for everyone. Together we maintain the 
             spirit of kindness and mutual respect.
           </p>
