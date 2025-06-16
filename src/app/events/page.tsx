@@ -3,12 +3,29 @@ import { Calendar, MapPin, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Image from 'next/image';
 
-// Helper function to calculate days until event
+// Helper function to calculate days until event with timezone awareness
 function daysUntil(eventDate: string) {
   const today = new Date();
   const event = new Date(eventDate);
-  const diffTime = event.getTime() - today.getTime();
+  
+  // Adjust both dates to UTC to eliminate timezone differences
+  const todayUTC = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const eventUTC = Date.UTC(event.getUTCFullYear(), event.getUTCMonth(), event.getUTCDate());
+  
+  const diffTime = eventUTC - todayUTC;
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Helper to check if event is in the future (timezone safe)
+function isFutureEvent(eventDate: string) {
+  const today = new Date();
+  const event = new Date(eventDate);
+  
+  // Compare dates without time components
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const eventDateOnly = new Date(event.getFullYear(), event.getMonth(), event.getDate());
+  
+  return eventDateOnly >= todayDate;
 }
 
 async function getEvents() {
@@ -21,32 +38,24 @@ async function getEvents() {
     return [];
   }
   
-  // Sort events: future first (ascending), then past events (descending)
-  return data.sort((a, b) => {
-    const today = new Date();
-    const aDate = new Date(a.eventdate);
-    const bDate = new Date(b.eventdate);
-    
-    // Both future events - sort ascending
-    if (aDate >= today && bDate >= today) {
-      return aDate.getTime() - bDate.getTime();
-    }
-    
-    // Both past events - sort descending
-    if (aDate < today && bDate < today) {
-      return bDate.getTime() - aDate.getTime();
-    }
-    
-    // Future comes before past
-    return aDate >= today ? -1 : 1;
-  });
+  return data;
 }
 
 export default async function EventsPage() {
   const events = await getEvents();
-  const today = new Date();
-  const futureEvents = events.filter(event => new Date(event.eventdate) >= today);
-  const pastEvents = events.filter(event => new Date(event.eventdate) < today);
+  
+  // Use timezone-safe functions to categorize events
+  const futureEvents = events.filter(event => isFutureEvent(event.eventdate));
+  const pastEvents = events.filter(event => !isFutureEvent(event.eventdate));
+  
+  // Sort future events ascending, past events descending
+  futureEvents.sort((a, b) => 
+    new Date(a.eventdate).getTime() - new Date(b.eventdate).getTime()
+  );
+  
+  pastEvents.sort((a, b) => 
+    new Date(b.eventdate).getTime() - new Date(a.eventdate).getTime()
+  );
 
   return (
     <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50 py-12">
@@ -121,16 +130,16 @@ export default async function EventsPage() {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-[#3AA3A0]" />
-                    {new Date(event.eventdate) < new Date() ? (
-                      <span className="font-semibold text-gray-500">
-                        No more seats left
-                          </span>
-                    ) : (
-                      <span className="font-semibold text-purple-600 animate-pulse">
-                        Only few seats left! Secure your spot now 🎟️
-                      </span>
-                    )}
+                      <Users className="w-5 h-5 text-[#3AA3A0]" />
+                      {isSoldOut ? (
+                        <span className="font-semibold text-gray-500">
+                          No more seats left
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-purple-600 animate-pulse">
+                          Only few seats left! Secure your spot now 🎟️
+                        </span>
+                      )}
                     </div>
                   </div>
 

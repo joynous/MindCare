@@ -31,6 +31,7 @@ const images = [
     { id: 30,src: '/images/events/event-30.webp', alt: 'stranger meetup at hauz khaz' },
     { id: 32,src: '/images/events/event-32.jpg', alt: 'machine game' },
     { id: 31,src: '/images/events/event-31.webp', alt: 'stranger meetup in hauz khaz' },
+    { id: 33,src: '/images/events/event-33.jpg', alt: 'stranger meetup at lazy monk cafe' },
   ];
   
 export const eventImages = images.sort((a,b) => b.id-a.id)
