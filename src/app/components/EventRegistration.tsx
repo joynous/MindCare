@@ -22,7 +22,16 @@ export interface EventData {
 }
 
 const EventRegistration = ({ event }: { event: EventData }) => {
-  const { register, handleSubmit, trigger } = useForm<FormData>();
+  const { 
+    register, 
+    handleSubmit, 
+    trigger,
+    formState: { errors, isValid, isDirty }
+  } = useForm<FormData>({
+    mode: 'onBlur',
+    reValidateMode: 'onBlur'
+  });
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState<{
@@ -200,53 +209,91 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">Full Name</label>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                  Full Name *
+                </label>
                 <input
                   {...register('name', { 
-                    required: true,
+                    required: "Name is required",
                     onChange: (e) => handleFormChange('name', e.target.value)
                   })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
-                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
+                    ${errors.name ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="Enter your full name"
+                  onBlur={() => trigger('name')}
                 />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <XCircle className="w-4 h-4 mr-1" />
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">Email</label>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                  Email *
+                </label>
                 <input
                   type="email"
                   {...register('email', { 
-                    required: true,
-                    pattern: /^\S+@\S+\.\S+$/,
+                    required: "Email is required",
+                    pattern: {
+                      value: /^\S+@\S+\.\S+$/,
+                      message: "Please enter a valid email"
+                    },
                     onChange: (e) => handleFormChange('email', e.target.value)
                   })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
-                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
+                    ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="your@email.com"
+                  onBlur={() => trigger('email')}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <XCircle className="w-4 h-4 mr-1" />
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">Phone</label>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                  Phone *
+                </label>
                 <input
                   type="tel"
                   {...register('phone', { 
-                    required: true,
-                    pattern: /^[6-9]\d{9}$/,
+                    required: "Phone number is required",
+                    pattern: {
+                      value: /^[6-9]\d{9}$/,
+                      message: "Please enter a valid 10-digit Indian phone number"
+                    },
                     onChange: (e) => handleFormChange('phone', e.target.value)
                   })}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
-                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
+                    ${errors.phone ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="10-digit phone number"
+                  onBlur={() => trigger('phone')}
                 />
+                {errors.phone && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <XCircle className="w-4 h-4 mr-1" />
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="w-full bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white py-3 rounded-lg 
-                  hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors"
+                disabled={!isValid || !isDirty}
+                className={`w-full bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white py-3 rounded-lg 
+                  hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors
+                  ${!isValid || !isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Continue to Payment
               </button>
