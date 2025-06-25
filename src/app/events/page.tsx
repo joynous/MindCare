@@ -3,35 +3,12 @@ import { Calendar, MapPin, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Image from 'next/image';
 
-// Helper function to calculate days until event with timezone awareness
-function daysUntil(eventDate: string) {
-  const today = new Date();
-  const event = new Date(eventDate);
-  
-  // Adjust both dates to UTC to eliminate timezone differences
-  const todayUTC = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  const eventUTC = Date.UTC(event.getUTCFullYear(), event.getUTCMonth(), event.getUTCDate());
-  
-  const diffTime = eventUTC - todayUTC;
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
-// Helper to check if event is in the future (timezone safe)
-function isFutureEvent(eventDate: string) {
-  const today = new Date();
-  const event = new Date(eventDate);
-  
-  // Compare dates without time components
-  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const eventDateOnly = new Date(event.getFullYear(), event.getMonth(), event.getDate());
-  
-  return eventDateOnly >= todayDate;
-}
-
+// Updated function to get events with proper date filtering
 async function getEvents() {
   const { data, error } = await supabase
     .from('events')
-    .select('*');
+    .select('*')
+    .order('eventdate', { ascending: true }); // Sort by date
 
   if (error) {
     console.error('Error fetching events:', error);
@@ -44,18 +21,22 @@ async function getEvents() {
 export default async function EventsPage() {
   const events = await getEvents();
   
-  // Use timezone-safe functions to categorize events
-  const futureEvents = events.filter(event => isFutureEvent(event.eventdate));
-  const pastEvents = events.filter(event => !isFutureEvent(event.eventdate));
+  // Get current date in local timezone for accurate comparison
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
   
-  // Sort future events ascending, past events descending
-  futureEvents.sort((a, b) => 
-    new Date(a.eventdate).getTime() - new Date(b.eventdate).getTime()
-  );
+  // Categorize events
+  const futureEvents = events.filter(event => {
+    const eventDate = new Date(event.eventdate);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= currentDate;
+  });
   
-  pastEvents.sort((a, b) => 
-    new Date(b.eventdate).getTime() - new Date(a.eventdate).getTime()
-  );
+  const pastEvents = events.filter(event => {
+    const eventDate = new Date(event.eventdate);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate < currentDate;
+  });
 
   return (
     <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50 py-12">
@@ -77,7 +58,12 @@ export default async function EventsPage() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {futureEvents.map((event) => {
-            const daysToEvent = daysUntil(event.eventdate);
+            const eventDate = new Date(event.eventdate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            eventDate.setHours(0, 0, 0, 0);
+            
+            const daysToEvent = Math.floor((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             const isSoldOut = event.bookedseats >= event.totalseats;
             
             return (
@@ -115,7 +101,7 @@ export default async function EventsPage() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-[#3AA3A0] flex-shrink-0" />
                       <span>
-                        {new Date(event.eventdate).toLocaleDateString('en-IN', {
+                        {eventDate.toLocaleDateString('en-IN', {
                           weekday: 'short',
                           day: 'numeric',
                           month: 'short',
@@ -134,6 +120,10 @@ export default async function EventsPage() {
                       {isSoldOut ? (
                         <span className="font-semibold text-gray-500">
                           No more seats left
+                        </span>
+                      ) : event.bookedseats >= event.totalseats * 0.8 ? (
+                        <span className="font-semibold text-purple-600 animate-pulse">
+                          Only few seats left! Secure your spot now 🎟️
                         </span>
                       ) : (
                         <span className="font-semibold text-purple-600 animate-pulse">
@@ -169,42 +159,49 @@ export default async function EventsPage() {
             </h2>
             
             <div className="grid md:grid-cols-2 gap-6">
-              {pastEvents.map((event) => (
-                <div 
-                  key={event.eventid}
-                  className="bg-white rounded-xl shadow overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="relative">
-                    <Image 
-                      src={`/images/events-header/${(event.eventid.charCodeAt(0) % 5) + 1}.jpg`}
-                      alt={event.eventname}
-                      width={600}
-                      height={300}
-                      className="w-full h-40 object-cover opacity-70"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">Event Ended</span>
+              {pastEvents.map((event) => {
+                const eventDate = new Date(event.eventdate);
+                const daysSince = Math.floor((new Date().getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <div 
+                    key={event.eventid}
+                    className="bg-white rounded-xl shadow overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <div className="relative">
+                      <Image 
+                        src={`/images/events-header/${(event.eventid.charCodeAt(0) % 5) + 1}.jpg`}
+                        alt={event.eventname}
+                        width={600}
+                        height={300}
+                        className="w-full h-40 object-cover opacity-70"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">
+                          {daysSince === 0 ? 'Event Ended Today' : `Ended ${daysSince} days ago`}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-[#1A2E35] mb-2">
-                      {event.eventname}
-                    </h3>
                     
-                    <div className="flex items-center gap-2 text-gray-500 text-sm">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {new Date(event.eventdate).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </span>
+                    <div className="p-5">
+                      <h3 className="text-lg font-bold text-[#1A2E35] mb-2">
+                        {event.eventname}
+                      </h3>
+                      
+                      <div className="flex items-center gap-2 text-gray-500 text-sm">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {eventDate.toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
