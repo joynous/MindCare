@@ -43,20 +43,12 @@ export async function POST(req: Request) {
 
 
     // 2. Capture payment
-    const captureResponse = await razorpay.payments.capture(
+     await razorpay.payments.capture(
       paymentId,
       amount * 100,
       "INR"
     );
     
-    // 3. Verify capture status
-    if (captureResponse.status !== 'captured') {
-      return NextResponse.json(
-        { success: false, error: `Capture failed: ${captureResponse.error_description}` },
-        { status: 400 }
-      );
-    }
-
     // Update booked seats
     const { error: seatError } = await supabase
       .from('events')
@@ -225,8 +217,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       success: true,
-      paymentId: captureResponse.id,
-      amount: Number(captureResponse.amount) / 100
     });
 
   } catch (error) {
