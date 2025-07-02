@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import PaymentButton from './PaymentButton';
 import { useForm } from 'react-hook-form';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Minus, Plus } from 'lucide-react';
 
 type FormData = {
   name: string;
@@ -39,11 +39,13 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     email: string;
     phone: string;
     event: string;
+    ticketQuantity: number; // Added ticket quantity
   }>({
     name: '',
     email: '',
     phone: '',
-    event: event.eventId
+    event: event.eventId,
+    ticketQuantity: 1 // Default to 1 ticket
   });
   
   // Coupon states
@@ -56,10 +58,14 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   >([]);
   const skipAutoApply = useRef(false); // Track if auto-apply should be skipped
 
-  // Calculate prices
-  const originalPrice = event.paymentAmount;
-  const discount = appliedCoupon ? appliedCoupon.discount : 0;
-  const finalPrice = Math.max(0, originalPrice - discount);
+  // Calculate available seats
+  const availableSeats = event.totalSeats - event.bookedSeats;
+  
+  // Calculate prices based on ticket quantity
+  const originalPricePerTicket = event.paymentAmount;
+  const discount = formData.ticketQuantity * (appliedCoupon ? appliedCoupon.discount : 0);
+  const totalOriginalPrice = formData.ticketQuantity * originalPricePerTicket;
+  const finalPrice = Math.max(0, totalOriginalPrice - (discount));
   
   // Check if event is in the future (within 7 days) for early bird eligibility
   useEffect(() => {
@@ -81,18 +87,18 @@ const EventRegistration = ({ event }: { event: EventData }) => {
       },
       { 
         code: 'FRIEND10', 
-        discount: Math.min(100, originalPrice * 0.1), 
+        discount: Math.min(100, originalPricePerTicket * 0.1), 
         description: '10% off (max ₹100)', 
         valid: true 
       },
       { 
         code: 'WELCOME25', 
-        discount: Math.min(200, originalPrice * 0.25), 
-        description: '30% off (max ₹200)', 
+        discount: Math.min(200, originalPricePerTicket * 0.25), 
+        description: '25% off (max ₹200)', 
         valid: true 
       }
     ]);
-  }, [event.eventDate, originalPrice]);
+  }, [event.eventDate, originalPricePerTicket]);
 
   // Apply early bird discount by default if eligible and not skipped
   useEffect(() => {
@@ -106,6 +112,17 @@ const EventRegistration = ({ event }: { event: EventData }) => {
       ...prev,
       [field]: value,
       event: event.eventId
+    }));
+  };
+
+  // Handle ticket quantity changes
+  const handleTicketQuantityChange = (newQuantity: number) => {
+    if (newQuantity < 1) return;
+    if (newQuantity > availableSeats) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      ticketQuantity: newQuantity
     }));
   };
 
@@ -142,10 +159,10 @@ const EventRegistration = ({ event }: { event: EventData }) => {
       setAppliedCoupon({ code: upperCode, discount: 150 });
     } 
     else if (upperCode === 'FRIEND10') {
-      setAppliedCoupon({ code: upperCode, discount: Math.min(100, originalPrice * 0.1) });
+      setAppliedCoupon({ code: upperCode, discount: Math.min(100, originalPricePerTicket * 0.1) });
     }
     else if (upperCode === 'WELCOME25') {
-      setAppliedCoupon({ code: upperCode, discount: Math.min(200, originalPrice * 0.30) });
+      setAppliedCoupon({ code: upperCode, discount: Math.min(200, originalPricePerTicket * 0.25) });
     }
     else {
       setCouponError('Invalid coupon code');
@@ -187,7 +204,9 @@ const EventRegistration = ({ event }: { event: EventData }) => {
           animate={{ scale: 1 }}
         >
           <h3 className="text-xl font-bold text-green-600 dark:text-green-300 mb-2">🎉 Registration Successful!</h3>
-          <p className="text-green-700 dark:text-green-200">Check your email for confirmation details.</p>
+          <p className="text-green-700 dark:text-green-200">
+            Check your email for confirmation details for {formData.ticketQuantity} ticket{formData.ticketQuantity > 1 ? 's' : ''}.
+          </p>
         </motion.div>
       ) : paymentStatus === 'error' ? (
         <motion.div 
@@ -313,9 +332,43 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Venue: {event.eventVenue}</p>
                 
                 <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-600">
+                  {/* Ticket quantity selector */}
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">Number of Tickets:</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTicketQuantityChange(formData.ticketQuantity - 1)}
+                        disabled={formData.ticketQuantity <= 1}
+                        className="p-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="font-medium">{formData.ticketQuantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleTicketQuantityChange(formData.ticketQuantity + 1)}
+                        disabled={formData.ticketQuantity >= availableSeats}
+                        className="p-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Price breakdown */}
                   <div className="flex justify-between mb-1">
-                    <span className="text-gray-600 dark:text-[#9CA3AF]">Original Price:</span>
-                    <span className="text-gray-600 dark:text-[#9CA3AF]">₹{originalPrice}</span>
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">
+                      Price per ticket:
+                    </span>
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">₹{originalPricePerTicket}</span>
+                  </div>
+                  
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">
+                      Subtotal ({formData.ticketQuantity} ticket{formData.ticketQuantity > 1 ? 's' : ''}):
+                    </span>
+                    <span className="text-gray-600 dark:text-[#9CA3AF]">₹{totalOriginalPrice}</span>
                   </div>
                   
                   {appliedCoupon && (
@@ -329,7 +382,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                           Remove
                         </button>
                       </div>
-                      <span className="text-green-600 dark:text-green-400">-₹{appliedCoupon.discount}</span>
+                      <span className="text-green-600 dark:text-green-400">-₹{discount}</span>
                     </div>
                   )}
                   
