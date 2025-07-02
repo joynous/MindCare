@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       throw new Error('Email service configuration is missing');
     }
 
-    const { paymentId, registrationId, amount, eventId, couponCode } = await req.json();
+    const { paymentId, registrationId, amount, eventId, couponCode, numberOfSeats} = await req.json();
     
     //1. Check available seats
     const { data: eventData, error: eventError } = await supabase
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     // Update booked seats
     const { error: seatError } = await supabase
       .from('events')
-      .update({ bookedseats: eventData.bookedseats + 1 })
+      .update({ bookedseats: eventData.bookedseats + numberOfSeats })
       .eq('eventid', eventId);
 
     if (seatError) throw seatError;
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
                     <div>${eventData.eventvenue}</div>
                     
                     <div style="color: #6C757D;">Seats Booked:</div>
-                    <div>1 Ticket</div>
+                    <div>${numberOfSeats} Ticket</div>
                 </div>
             </div>
 

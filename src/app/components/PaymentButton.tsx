@@ -21,7 +21,11 @@ interface PaymentButtonProps {
     name: string;
     email: string;
     phone: string;
+    age: string;
+    hearAbout: string;
+    otherSource?: string;
     event: string;
+    ticketQuantity: number;
   };
   eventData: EventData;
   couponCode?: string; // Add couponCode prop
@@ -69,7 +73,12 @@ export default function PaymentButton({
       const { data: registration, error: dbError } = await supabase
         .from('registrations')
         .insert({
-          ...formData,
+          name: formData?.name,
+          email: formData?.email,
+          age: formData?.age,
+          event: formData?.event,
+          phone: formData?.phone,
+          hear_about: formData?.hearAbout,
           user_id: user?.id,
           status: 'pending',
           coupon_used: couponCode || null, // Add coupon_code to the insert
@@ -104,7 +113,8 @@ export default function PaymentButton({
                 eventId: eventData.eventId,
                 registrationId: registration.id,
                 amount: amount,
-                couponCode: couponCode // Pass couponCode to the API
+                couponCode: couponCode, // Pass couponCode to the API
+                numberOfSeats: formData?.ticketQuantity
               })
             });
 

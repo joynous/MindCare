@@ -9,6 +9,12 @@ type FormData = {
   name: string;
   email: string;
   phone: string;
+  age: string;
+  hearAbout: string;
+  otherSource?: string;
+  idProof: boolean;
+  termsAccepted: boolean;
+  instagramPhotos: string; // Added Instagram photos permission
 };
 
 export interface EventData {
@@ -26,10 +32,18 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     register, 
     handleSubmit, 
     trigger,
+    watch,
     formState: { errors, isValid, isDirty }
   } = useForm<FormData>({
     mode: 'onBlur',
-    reValidateMode: 'onBlur'
+    reValidateMode: 'onBlur',
+    defaultValues: {
+      hearAbout: '',
+      age: '',
+      idProof: false,
+      termsAccepted: false,
+      instagramPhotos: ''
+    }
   });
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -39,14 +53,28 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     email: string;
     phone: string;
     event: string;
-    ticketQuantity: number; // Added ticket quantity
+    ticketQuantity: number;
+    age: string;
+    hearAbout: string;
+    otherSource?: string;
+    idProof: boolean;
+    termsAccepted: boolean;
+    instagramPhotos: string; // Added Instagram photos permission
   }>({
     name: '',
     email: '',
     phone: '',
     event: event.eventId,
-    ticketQuantity: 1 // Default to 1 ticket
+    ticketQuantity: 1,
+    age: '',
+    hearAbout: '',
+    idProof: false,
+    termsAccepted: false,
+    instagramPhotos: ''
   });
+  
+  // Watch hearAbout value for conditional rendering
+  const hearAboutValue = watch('hearAbout');
   
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
@@ -107,7 +135,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     }
   }, [isEarlyBirdEligible, appliedCoupon]);
 
-  const handleFormChange = (field: keyof FormData, value: string) => {
+  const handleFormChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -250,6 +278,70 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 )}
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                    Age *
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="100"
+                    {...register('age', { 
+                      required: "Age is required",
+                      min: {
+                        value: 10,
+                        message: "Minimum age is 10"
+                      },
+                      max: {
+                        value: 50,
+                        message: "Maximum age is 50"
+                      },
+                      onChange: (e) => handleFormChange('age', e.target.value)
+                    })}
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                      dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
+                      ${errors.age ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="Your age"
+                    onBlur={() => trigger('age')}
+                  />
+                  {errors.age && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      {errors.age.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                    Phone *
+                  </label>
+                  <input
+                    type="tel"
+                    {...register('phone', { 
+                      required: "Phone number is required",
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: "Please enter a valid 10-digit Indian phone number"
+                      },
+                      onChange: (e) => handleFormChange('phone', e.target.value)
+                    })}
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                      dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
+                      ${errors.phone ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder="10-digit phone number"
+                    onBlur={() => trigger('phone')}
+                  />
+                  {errors.phone && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <XCircle className="w-4 h-4 mr-1" />
+                      {errors.phone.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
                   Email *
@@ -280,31 +372,143 @@ const EventRegistration = ({ event }: { event: EventData }) => {
 
               <div>
                 <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
-                  Phone *
+                  How did you hear about us? *
                 </label>
-                <input
-                  type="tel"
-                  {...register('phone', { 
-                    required: "Phone number is required",
-                    pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: "Please enter a valid 10-digit Indian phone number"
-                    },
-                    onChange: (e) => handleFormChange('phone', e.target.value)
+                <select
+                  {...register('hearAbout', { 
+                    required: "This field is required",
+                    onChange: (e) => handleFormChange('hearAbout', e.target.value)
                   })}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
                     dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
-                    ${errors.phone ? 'border-red-500 focus:ring-red-500' : ''}`}
-                  placeholder="10-digit phone number"
-                  onBlur={() => trigger('phone')}
-                />
-                {errors.phone && (
+                    ${errors.hearAbout ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  onBlur={() => trigger('hearAbout')}
+                >
+                  <option value="">Select an option</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Other">Other</option>
+                </select>
+                {errors.hearAbout && (
                   <p className="text-red-500 text-sm mt-1 flex items-center">
                     <XCircle className="w-4 h-4 mr-1" />
-                    {errors.phone.message}
+                    {errors.hearAbout.message}
+                  </p>
+                )}
+
+                {hearAboutValue === 'Other' && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                      Please specify *
+                    </label>
+                    <input
+                      {...register('otherSource', { 
+                        required: hearAboutValue === 'Other' ? "Please specify how you heard about us" : false,
+                        onChange: (e) => handleFormChange('otherSource', e.target.value)
+                      })}
+                      className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                        dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]
+                        ${errors.otherSource ? 'border-red-500 focus:ring-red-500' : ''}`}
+                      placeholder="How did you hear about us?"
+                      onBlur={() => trigger('otherSource')}
+                    />
+                    {errors.otherSource && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <XCircle className="w-4 h-4 mr-1" />
+                        {errors.otherSource.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Instagram Photos Permission */}
+              <div>
+                <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
+                  Do we have your permission to post photos/videos that may include you on our official instagram page? *
+                </label>
+                <div className="flex gap-6 mt-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      value="yes"
+                      {...register('instagramPhotos', {
+                        required: "Please select an option",
+                        onChange: (e) => handleFormChange('instagramPhotos', e.target.value)
+                      })}
+                      className="h-4 w-4 text-[#3AA3A0] focus:ring-[#3AA3A0] border-gray-300"
+                    />
+                    <span className="text-gray-700 dark:text-[#E5E7EB]">Yes, absolutely!</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      value="no"
+                      {...register('instagramPhotos', {
+                        required: "Please select an option",
+                        onChange: (e) => handleFormChange('instagramPhotos', e.target.value)
+                      })}
+                      className="h-4 w-4 text-[#3AA3A0] focus:ring-[#3AA3A0] border-gray-300"
+                    />
+                    <span className="text-gray-700 dark:text-[#E5E7EB]">No, I prefer not</span>
+                  </label>
+                </div>
+                {errors.instagramPhotos && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <XCircle className="w-4 h-4 mr-1" />
+                    {errors.instagramPhotos.message}
                   </p>
                 )}
               </div>
+
+              {/* ID Proof Checkbox */}
+              <div className="flex items-start gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="idProof"
+                  {...register('idProof', {
+                    required: "You must agree to provide ID proof",
+                    onChange: (e) => handleFormChange('idProof', e.target.checked)
+                  })}
+                  className={`mt-1 h-5 w-5 rounded border-gray-300 text-[#3AA3A0] focus:ring-[#3AA3A0]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:focus:ring-[#2DB4AF] 
+                    ${errors.idProof ? 'border-red-500' : ''}`}
+                />
+                <label htmlFor="idProof" className="block text-sm text-gray-700 dark:text-[#E5E7EB]">
+                  Will you be willing to provide any ID proof in the event (Aadhar/PAN card)? *
+                </label>
+              </div>
+              {errors.idProof && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <XCircle className="w-4 h-4 mr-1" />
+                  {errors.idProof.message}
+                </p>
+              )}
+
+              {/* Terms & Conditions Checkbox */}
+              <div className="flex items-start gap-3 pt-1">
+                <input
+                  type="checkbox"
+                  id="termsAccepted"
+                  {...register('termsAccepted', {
+                    required: "You must accept the terms and conditions",
+                    onChange: (e) => handleFormChange('termsAccepted', e.target.checked)
+                  })}
+                  className={`mt-1 h-5 w-5 rounded border-gray-300 text-[#3AA3A0] focus:ring-[#3AA3A0]
+                    dark:bg-[#1F2937] dark:border-gray-600 dark:focus:ring-[#2DB4AF] 
+                    ${errors.termsAccepted ? 'border-red-500' : ''}`}
+                />
+                <label htmlFor="termsAccepted" className="block text-sm text-gray-700 dark:text-[#E5E7EB]">
+                  I accept the <a href="/communityGuidelines" className="text-[#3AA3A0] dark:text-[#2DB4AF] underline" target="_blank">terms and conditions</a> *
+                </label>
+              </div>
+              {errors.termsAccepted && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <XCircle className="w-4 h-4 mr-1" />
+                  {errors.termsAccepted.message}
+                </p>
+              )}
 
               <button
                 type="button"
