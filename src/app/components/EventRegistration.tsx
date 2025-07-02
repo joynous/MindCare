@@ -120,9 +120,9 @@ const EventRegistration = ({ event }: { event: EventData }) => {
         valid: true 
       },
       { 
-        code: 'WELCOME25', 
-        discount: Math.min(200, originalPricePerTicket * 0.25), 
-        description: '25% off (max ₹200)', 
+        code: 'WELCOME15', 
+        discount: Math.min(200, originalPricePerTicket * 0.15), 
+        description: '15% off (max ₹200)', 
         valid: true 
       }
     ]);
@@ -189,8 +189,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     else if (upperCode === 'FRIEND10') {
       setAppliedCoupon({ code: upperCode, discount: Math.min(100, originalPricePerTicket * 0.1) });
     }
-    else if (upperCode === 'WELCOME25') {
-      setAppliedCoupon({ code: upperCode, discount: Math.min(200, originalPricePerTicket * 0.25) });
+    else if (upperCode === 'WELCOME15') {
+      setAppliedCoupon({ code: upperCode, discount: Math.min(200, originalPricePerTicket * 0.15) });
     }
     else {
       setCouponError('Invalid coupon code');
