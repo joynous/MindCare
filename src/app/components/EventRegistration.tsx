@@ -476,7 +476,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     ${errors.idProof ? 'border-red-500' : ''}`}
                 />
                 <label htmlFor="idProof" className="block text-sm text-gray-700 dark:text-[#E5E7EB]">
-                  Will you be willing to provide any ID proof in the event (Aadhar/PAN card)? *
+                  Please provide any ID proof in the event (Aadhar/PAN card)? *
                 </label>
               </div>
               {errors.idProof && (
