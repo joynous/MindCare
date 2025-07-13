@@ -1,13 +1,19 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Sparkles, Users, Calendar, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles, Users, Calendar, MessageSquare, ChevronLeft, ChevronRight, ArrowDown } from 'lucide-react';
 import { eventImages } from './data/event';
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import confetti from 'canvas-confetti';
+
+// Feature flag for festive mode (set in environment variables)
+const FESTIVE_MODE = process.env.NEXT_PUBLIC_FESTIVE_MODE === 'true';
 
 export default function Home() {
   const scrollContainer = useRef<HTMLDivElement>(null);
+  const showArrow = true
+  const [sparkleKey, setSparkleKey] = useState(0); // Key to force re-render sparkles
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainer.current) {
@@ -19,14 +25,101 @@ export default function Home() {
     }
   };
 
+  // Trigger confetti on page load (only in festive mode)
+  useEffect(() => {
+    if (!FESTIVE_MODE) return;
+    
+    const triggerConfetti = () => {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#F7D330', '#3AA3A0', '#FF6B6B', '#8AE2E0']
+      });
+    };
+
+    // Initial confetti
+    triggerConfetti();
+    
+    // Periodic confetti every 10 seconds
+    const confettiInterval = setInterval(triggerConfetti, 10000);
+    
+    // Remove arrow after 5 seconds
+    // const arrowTimeout = setTimeout(() => setShowArrow(false), 5000);
+    
+    // More frequent sparkles
+    const sparkleInterval = setInterval(() => {
+      setSparkleKey(prev => prev + 1);
+    }, 1500); // Changed to 1.5 seconds for more frequent sparkles
+    
+    return () => {
+      clearInterval(confettiInterval);
+      // clearTimeout(arrowTimeout);
+      clearInterval(sparkleInterval);
+    };
+  }, []);
+
+  // Render sparkles with random positions
+  const renderSparkles = () => {
+    if (!FESTIVE_MODE) return null;
+    
+    return [...Array(30)].map((_, i) => {
+      const size = Math.random() * 20 + 5;
+      return (
+        <motion.div
+          key={`${sparkleKey}-${i}`}
+          className="absolute text-2xl"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            fontSize: `${size}px`,
+            opacity: 0
+          }}
+          animate={{
+            y: [0, -50, 0],
+            x: [0, (Math.random() - 0.5) * 50],
+            rotate: [0, 360],
+            opacity: [0, 0.8, 0]
+          }}
+          transition={{
+            duration: 1 + Math.random() * 2,
+            ease: "easeInOut"
+          }}
+        >
+          ✨
+        </motion.div>
+      );
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 overflow-hidden">
+      {/* Festive elements only shown when feature flag is enabled */}
+      {FESTIVE_MODE && (
+        <>
+          {/* Floating Sparkles */}
+          {renderSparkles()}
+        </>
+      )}
+
       {/* Animated Hero Section */}
       <motion.section 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="container mt-10 mx-auto px-4 py-16 text-center relative overflow-hidden"
       >
+        {/* Festive Banner (moved inside hero section) */}
+        {FESTIVE_MODE && (
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="absolute top-4 left-0 right-0 bg-gradient-to-r from-[#FF6B6B] to-[#F7D330] py-2 text-white font-bold text-lg text-center z-50"
+          >
+            🎊 Joynous Fest Next Week! 🎊
+          </motion.div>
+        )}
+        
         {/* Floating Background Elements */}
         <motion.div
           className="absolute top-20 left-1/4 w-24 h-24 bg-[#F7D330]/20 dark:bg-[#F7D330]/30 rounded-full blur-xl"
@@ -62,18 +155,122 @@ export default function Home() {
             Join real-world experiences that spark joy and create lasting memories
           </motion.p>
 
+          {/* Arrow pointing to button (festive mode only) */}
+          {FESTIVE_MODE && showArrow && (
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="flex justify-center mb-4"
+            >
+              <motion.div
+                animate={{ y: [0, 10, 0] }}
+                transition={{ 
+                  duration: 1.5, 
+                  repeat: Infinity,
+                  repeatType: "loop"
+                }}
+              >
+                <ArrowDown className="w-8 h-8 text-[#FF6B6B] animate-bounce" />
+              </motion.div>
+            </motion.div>
+          )}
+
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="inline-block"
+            className="inline-block relative"
           >
+            {/* Festive sparkles around button (more frequent) */}
+            {FESTIVE_MODE && (
+              <motion.div
+                key={`sparkle-${sparkleKey}`}
+                className="absolute -inset-2 rounded-full bg-[#F7D330]/20"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1.8, opacity: [0.3, 0.8, 0] }}
+                transition={{
+                  duration: 1.5,
+                  ease: "easeOut"
+                }}
+              />
+            )}
+            
             <Link
               href="/events"
-              className="bg-[#F7D330] dark:bg-[#F7D330]/90 text-[#1A2E35] dark:text-[#1A2E35]/90 px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] dark:hover:bg-[#F7D330]/80 transition-colors flex items-center gap-2"
+              className="relative bg-[#F7D330] dark:bg-[#F7D330]/90 text-[#1A2E35] dark:text-[#1A2E35]/90 px-8 py-3 rounded-full text-lg font-bold hover:bg-[#F7DD80] dark:hover:bg-[#F7D330]/80 transition-colors flex items-center gap-2 z-10"
             >
               <Sparkles className="w-5 h-5" />
-              Join Us for Next Event
+              {FESTIVE_MODE ? "Join Joynous Fest Now!" : "Join Us for Next Event"}
             </Link>
+            
+            {/* Additional sparkles (festive mode only) - More frequent */}
+            {FESTIVE_MODE && (
+              <>
+                <motion.div
+                  className="absolute -top-4 -right-4 text-2xl"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 360],
+                    opacity: [0, 1, 0]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    delay: 0.5
+                  }}
+                >
+                  ✨
+                </motion.div>
+                <motion.div
+                  className="absolute -bottom-4 -left-4 text-2xl"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 360],
+                    opacity: [0, 1, 0]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    delay: 1
+                  }}
+                >
+                  ✨
+                </motion.div>
+                <motion.div
+                  className="absolute -top-4 -left-4 text-2xl"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 360],
+                    opacity: [0, 1, 0]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    delay: 0
+                  }}
+                >
+                  ✨
+                </motion.div>
+                <motion.div
+                  className="absolute -bottom-4 -right-4 text-2xl"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 360],
+                    opacity: [0, 1, 0]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    delay: 1.5
+                  }}
+                >
+                  ✨
+                </motion.div>
+              </>
+            )}
           </motion.div>
         </div>
       </motion.section>
@@ -108,9 +305,10 @@ export default function Home() {
             className="flex overflow-x-auto scrollbar-hide pb-4 gap-4"
           >
             {eventImages.map((image) => (
-              <div 
+              <motion.div 
                 key={image.id}
                 className="relative flex-shrink-0 w-[300px] h-[400px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group"
+                whileHover={{ y: -10 }}
               >
                 <div className="relative w-full h-full">
                   <Image
@@ -126,7 +324,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -165,9 +363,20 @@ export default function Home() {
               initial={{ y: 20, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               transition={{ delay: index * 0.2 }}
-              className="bg-white dark:bg-white/90 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+              className="bg-white dark:bg-white/90 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative overflow-hidden"
             >
-              <div className="flex justify-center mb-4">{feature.icon}</div>
+              {/* Festive corner accent (festive mode only) */}
+              {FESTIVE_MODE && (
+                <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF6B6B]/10 transform rotate-45 translate-x-8 -translate-y-8" />
+              )}
+              
+              <div className="flex justify-center mb-4 relative z-10">
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                >
+                  {feature.icon}
+                </motion.div>
+              </div>
               <h3 className="text-xl font-semibold text-[#1A2E35] dark:text-[#1A2E35]/90 mb-2">
                 {feature.title}
               </h3>
