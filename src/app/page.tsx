@@ -96,10 +96,10 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 overflow-hidden">
       {/* Festive elements only shown when feature flag is enabled */}
       {FESTIVE_MODE && (
-        <>
+        <div className="fixed inset-0 pointer-events-none z-50">
           {/* Floating Sparkles */}
           {renderSparkles()}
-        </>
+        </div>
       )}
 
       {/* Animated Hero Section */}
