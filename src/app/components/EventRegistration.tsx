@@ -33,7 +33,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     handleSubmit, 
     trigger,
     watch,
-    formState: { errors, isValid, isDirty }
+    formState: { errors, isValid }
   } = useForm<FormData>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
@@ -210,6 +210,25 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   const handleCouponClick = (code: string) => {
     setCouponCode(code);
     applyCoupon(code);
+  };
+
+  // Function to handle step 1 continue button click
+  const handleContinueToPayment = async () => {
+    
+    // Trigger form validation
+    const isValid = await validateForm();
+    
+    if (isValid) {
+      setCurrentStep(2);
+    } else {      
+      // Scroll to first error
+      setTimeout(() => {
+        const firstErrorElement = document.querySelector('.border-red-500');
+        if (firstErrorElement) {
+          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -512,16 +531,18 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 </p>
               )}
 
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                disabled={!isValid || !isDirty}
-                className={`w-full bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white py-3 rounded-lg 
-                  hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors
-                  ${!isValid || !isDirty ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                Continue to Payment
-              </button>
+              <div className="mt-2">
+                <button
+                  type="button"
+                  onClick={handleContinueToPayment}
+                  className={`w-full bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white py-3 rounded-lg 
+                    hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors
+                    ${!isValid ? 'opacity-90' : ''}`}
+                >
+                  Continue to Payment
+                </button>
+                
+              </div>
             </motion.div>
           )}
 

@@ -116,7 +116,7 @@ export default function Home() {
             transition={{ delay: 0.5 }}
             className="absolute top-4 left-0 right-0 bg-gradient-to-r from-[#FF6B6B] to-[#F7D330] py-2 text-white font-bold text-lg text-center z-50"
           >
-            🎊 Joynous Fest Next Week! 🎊
+            🎊 Joynous Fest coming sunday! 🎊
           </motion.div>
         )}
         
