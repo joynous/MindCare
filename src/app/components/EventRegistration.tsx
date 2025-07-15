@@ -86,6 +86,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   >([]);
   const skipAutoApply = useRef(false); // Track if auto-apply should be skipped
 
+  const earlyBirdDiscountValue = process.env.NEXT_PUBLIC_EARLY_BIRD_DISCOUNT ? parseInt(process.env.NEXT_PUBLIC_EARLY_BIRD_DISCOUNT) : 150;
+
   // Calculate available seats
   const availableSeats = event.totalSeats - event.bookedSeats;
   
@@ -109,8 +111,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     setCouponInfo([
       { 
         code: 'EARLYBIRD', 
-        discount: 150, 
-        description: '₹150 off', 
+        discount: earlyBirdDiscountValue, 
+        description: `${earlyBirdDiscountValue} off`, 
         valid: earlyBirdEligible 
       },
       { 
@@ -131,7 +133,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   // Apply early bird discount by default if eligible and not skipped
   useEffect(() => {
     if (isEarlyBirdEligible && !appliedCoupon && !skipAutoApply.current) {
-      setAppliedCoupon({ code: 'EARLYBIRD', discount: 150 });
+      setAppliedCoupon({ code: 'EARLYBIRD', discount: earlyBirdDiscountValue });
     }
   }, [isEarlyBirdEligible, appliedCoupon]);
 
@@ -184,7 +186,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
         setCouponError('Early bird discount has expired for this event');
         return;
       }
-      setAppliedCoupon({ code: upperCode, discount: 150 });
+      setAppliedCoupon({ code: upperCode, discount: earlyBirdDiscountValue });
     } 
     else if (upperCode === 'FRIEND10') {
       setAppliedCoupon({ code: upperCode, discount: Math.min(100, originalPricePerTicket * 0.1) });
