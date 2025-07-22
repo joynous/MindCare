@@ -122,14 +122,14 @@ export default function EventDetailPage() {
               className="bg-white dark:bg-[#1F2937] p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow"
             >
               <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 text-[#1A2E35] dark:text-[#E5E7EB]">About This Event</h2>
-              <div className="text-base md:text-lg text-gray-600 dark:text-[#9CA3AF] leading-relaxed whitespace-pre-wrap">
+              <div className="text-base md:text-lg text-gray-600 dark:text-[#9CA3AF] leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
                 <Linkify componentDecorator={(decoratedHref, decoratedText, key) => (
                   <a 
                     href={decoratedHref} 
                     key={key} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[#3AA3A0] dark:text-[#2DB4AF] hover:underline"
+                    className="text-[#3AA3A0] dark:text-[#2DB4AF] hover:underline break-words break-all"
                   >
                     {decoratedText}
                   </a>
@@ -171,7 +171,7 @@ export default function EventDetailPage() {
             )}
 
             {/* Speakers Section */}
-            {event.speakers && (
+            {event.speakers?.length >= 1 && (
               <motion.section 
                 className="bg-white dark:bg-[#1F2937] p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow"
                 initial={{ scale: 0.98 }}
