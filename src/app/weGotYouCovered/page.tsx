@@ -198,7 +198,7 @@ export default function WeGotYouCoveredPage() {
         {/* Mobile background image - without blur */}
         <div className="md:hidden absolute inset-0 z-0">
           <Image
-            src="/images/events/event-34.jpg"
+            src="/images/events/event-33.jpg"
             alt="Community event background"
             fill
             className="object-cover"
