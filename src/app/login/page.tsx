@@ -33,8 +33,12 @@ export default function LoginPage() {
       if (authError) throw authError;
 
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Login failed');
+      }
       console.error('Login error:', err);
     } finally {
       setLoading(false);

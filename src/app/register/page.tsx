@@ -40,7 +40,7 @@ export default function RegisterPage() {
       if (dbError) throw new Error(dbError.message);
       setMessage('Registration successful! Please check your email to confirm.');
       setTimeout(() => router.push('/login'), 3000);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Registration error:', err);
       setError('Please try again, registration has failed.');
     } finally { setLoading(false); }
