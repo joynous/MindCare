@@ -161,7 +161,7 @@ export default function EventDetailPage() {
             )}
 
             {/* Speakers Section */}
-            {event.speakers?.length >= 1 && (
+            {/* {event.speakers?.length >= 1 && (
               <motion.section 
                 className="bg-white dark:bg-[#1F2937] p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl shadow"
                 initial={{ scale: 0.98 }}
@@ -186,7 +186,7 @@ export default function EventDetailPage() {
                   ))}
                 </div>
               </motion.section>
-            )}
+            )} */}
           </div>
         </div>
   );

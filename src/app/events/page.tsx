@@ -1,3 +1,5 @@
+export const revalidate = 0;
+
 import Link from 'next/link';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';

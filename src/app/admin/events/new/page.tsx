@@ -31,52 +31,30 @@ type EventFormValues = z.infer<typeof eventFormSchema>;
 export default function EventCreationForm() {
   const { register, control, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: {
-      speakers: [{ name: '', role: '' }]
-    }
+    defaultValues: { speakers: [{ name: '', role: '' }] }
   });
 
-  const { fields: speakerFields, append: appendSpeaker, remove: removeSpeaker } = useFieldArray({
-    control,
-    name: 'speakers'
-  });
+  const { fields: speakerFields, append: appendSpeaker, remove: removeSpeaker } = useFieldArray({ control, name: 'speakers' });
 
-  // Store existing event conflicts (date + time + venue)
   const [existingEvents, setExistingEvents] = useState<Set<string>>(new Set());
   const selectedDate = watch('eventDate');
   const selectedTime = watch('eventTime');
   const selectedVenue = watch('eventVenue');
 
-  // Fetch existing events to check for conflicts
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('eventdate, eventtime, eventvenue');
-
+        const { data, error } = await supabase.from('events').select('eventdate, eventtime, eventvenue');
         if (error) throw error;
-
-        // Create conflict keys: date|time|venue (normalized)
         const conflictKeys = new Set<string>();
-        (data || []).forEach(event => {
-          try {
-            const date = new Date(event.eventdate);
-            const dateStr = date.toISOString().split('T')[0];
-            const time = event.eventtime?.trim().toUpperCase();
-            const venue = event.eventvenue?.trim().toLowerCase();
-            
-            if (dateStr && time && venue) {
-              conflictKeys.add(`${dateStr}|${time}|${venue}`);
-            }
-          } catch (e) {
-            console.error('Error processing event data:', e);
-          }
+        data?.forEach(evt => {
+          const dateStr = new Date(evt.eventdate).toISOString().split('T')[0];
+          const time = evt.eventtime?.trim().toUpperCase();
+          const venue = evt.eventvenue?.trim().toLowerCase();
+          if (dateStr && time && venue) conflictKeys.add(`${dateStr}|${time}|${venue}`);
         });
-
         setExistingEvents(conflictKeys);
-      } catch (error) {
-        console.error('Error fetching events:', error);
+      } catch {
         toast.error('Failed to load existing events data');
       }
     };
@@ -85,29 +63,15 @@ export default function EventCreationForm() {
 
   const onSubmit = async (data: EventFormValues) => {
     try {
-      // Validate date
       const eventDate = new Date(data.eventDate);
-      if (isNaN(eventDate.getTime())) {
-        throw new Error('Invalid date format');
-      }
-
-      // Check for future date
-      if (eventDate < new Date()) {
-        throw new Error('Cannot create event in the past');
-      }
-
-      // Create conflict key
+      if (isNaN(eventDate.getTime())) throw new Error('Invalid date format');
+      if (eventDate < new Date()) throw new Error('Cannot create event in the past');
       const dateStr = eventDate.toISOString().split('T')[0];
       const timeKey = data.eventTime.trim().toUpperCase();
       const venueKey = data.eventVenue.trim().toLowerCase();
       const conflictKey = `${dateStr}|${timeKey}|${venueKey}`;
+      if (existingEvents.has(conflictKey)) throw new Error('An event already exists at this venue on the same date and time');
 
-      // Check for conflict
-      if (existingEvents.has(conflictKey)) {
-        throw new Error('An event already exists at this venue on the same date and time');
-      }
-
-      // Create event
       const { error } = await supabase.from('events').insert({
         eventname: data.eventName,
         eventdate: eventDate.toISOString(),
@@ -119,250 +83,148 @@ export default function EventCreationForm() {
         speakers: data.speakers,
         payment_amount: data.paymentAmount,
       });
-
       if (error) throw error;
-      
-      // Add new event to conflict set
-      setExistingEvents(prev => new Set([...prev, conflictKey]));
+      setExistingEvents(prev => new Set(prev).add(conflictKey));
       toast.success('Event created successfully!');
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Failed to create event. Please try again.';
-      toast.error(errorMessage);
-      console.error('Event creation error:', error);
+    } catch (err) {
+      toast.error(
+        typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message?: string }).message || 'Failed to create event. Please try again.'
+          : 'Failed to create event. Please try again.'
+      );
     }
   };
 
-  // Check for conflict in real-time
   const hasConflict = () => {
     if (!selectedDate || !selectedTime || !selectedVenue) return false;
-    
     try {
-      const date = new Date(selectedDate);
-      if (isNaN(date.getTime())) return false;
-      
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = new Date(selectedDate).toISOString().split('T')[0];
       const timeKey = selectedTime.trim().toUpperCase();
       const venueKey = selectedVenue.trim().toLowerCase();
-      const conflictKey = `${dateStr}|${timeKey}|${venueKey}`;
-      
-      return existingEvents.has(conflictKey);
+      return existingEvents.has(`${dateStr}|${timeKey}|${venueKey}`);
     } catch {
       return false;
     }
   };
 
-  // Get minimum date string in local timezone format
-  const minDate = new Date();
-  minDate.setHours(0, 0, 0, 0);
-  const minDateString = minDate.toISOString().split('T')[0];
+  const minDateString = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="mx-auto p-6 bg-white rounded-xl shadow-lg mt-8">
-      <motion.h1 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-3xl mt-8 font-bold mb-8 text-[#1A2E35] text-center"
-      >
+    <div className="mx-auto p-6 bg-gradient-to-b from-orange-50 to-amber-50 overflow-hidden rounded-xl shadow-lg mt-8">
+      <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl mt-8 font-bold mb-8 text-[#1A2E35] text-center">
         Create New Event
       </motion.h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
-          <motion.div 
-            className="space-y-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <label className="block text-sm font-medium text-gray-700">Event Name</label>
             <input
               {...register('eventName')}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
             />
-            {errors.eventName && (
-              <p className="text-red-500 text-sm mt-1">{errors.eventName.message}</p>
-            )}
+            {errors.eventName && <p className="text-red-500 text-sm mt-1">{errors.eventName.message}</p>}
           </motion.div>
 
-          <motion.div 
-            className="space-y-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
+          <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
             <label className="block text-sm font-medium text-gray-700">Event Date</label>
             <input
               type="date"
               {...register('eventDate')}
               min={minDateString}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
             />
-            {errors.eventDate && (
-              <p className="text-red-500 text-sm mt-1">{errors.eventDate.message}</p>
-            )}
+            {errors.eventDate && <p className="text-red-500 text-sm mt-1">{errors.eventDate.message}</p>}
           </motion.div>
 
-          <motion.div 
-            className="space-y-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+          <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <label className="block text-sm font-medium text-gray-700">Event Time</label>
             <input
               placeholder="10:00 AM"
               {...register('eventTime')}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
             />
-            {errors.eventTime && (
-              <p className="text-red-500 text-sm mt-1">{errors.eventTime.message}</p>
-            )}
+            {errors.eventTime && <p className="text-red-500 text-sm mt-1">{errors.eventTime.message}</p>}
           </motion.div>
 
-          <motion.div 
-            className="space-y-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+          <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
             <label className="block text-sm font-medium text-gray-700">Venue</label>
             <input
               {...register('eventVenue')}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark:border-gray-600"
             />
-            {errors.eventVenue && (
-              <p className="text-red-500 text-sm mt-1">{errors.eventVenue.message}</p>
-            )}
+            {errors.eventVenue && <p className="text-red-500 text-sm mt-1">{errors.eventVenue.message}</p>}
           </motion.div>
 
-          <motion.div 
-            className="space-y-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
             <label className="block text-sm font-medium text-gray-700">Total Seats</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               min="1"
-              {...register('totalSeats', { valueAsNumber: true })} 
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+              {...register('totalSeats', { valueAsNumber: true })}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark;border-gray-600"
             />
-            {errors.totalSeats && (
-              <p className="text-red-500 text-sm mt-1">{errors.totalSeats.message}</p>
-            )}
+            {errors.totalSeats && <p className="text-red-500 text-sm mt-1">{errors.totalSeats.message}</p>}
           </motion.div>
         </div>
-        
-        <motion.div 
-          className="space-y-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
+
+        <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
           <label className="block text-sm font-medium text-gray-700">Payment Amount (₹)</label>
           <input
             type="number"
             step="1"
             min={0}
             {...register('paymentAmount', { valueAsNumber: true })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark;border-gray-600"
           />
-          {errors.paymentAmount && (
-            <p className="text-red-500 text-sm mt-1">{errors.paymentAmount.message}</p>
-          )}
+          {errors.paymentAmount && <p className="text-red-500 text-sm mt-1">{errors.paymentAmount.message}</p>}
         </motion.div>
 
-        <motion.div 
-          className="space-y-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
             {...register('description')}
             rows={4}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark;border-gray-600"
           />
           <p className="text-sm text-gray-500 mt-1">
             Note: Line breaks and spaces will be preserved. Links will be clickable.
           </p>
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
-          )}
+          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
         </motion.div>
 
-        <motion.div 
-          className="space-y-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        <motion.div className="space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="flex justify-between items-center border-b pb-2">
             <h3 className="text-lg font-semibold text-[#1A2E35]">Event captains</h3>
-            <button
-              type="button"
-              onClick={() => appendSpeaker({ name: '', role: '' })}
-              className="flex items-center text-[#3AA3A0] hover:text-[#2E827F] transition-colors"
-            >
+            <button type="button" onClick={() => appendSpeaker({ name: '', role: '' })} className="flex items-center text-[#3AA3A0] hover:text-[#2E827F] transition-colors">
               <Plus className="w-5 h-5 mr-1" />
               Add Event captain
             </button>
           </div>
 
           {speakerFields.map((field, index) => (
-            <motion.div
-              key={field.id}
-              className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg group"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            <motion.div key={field.id} className="flex gap-4 items-start bg-gray-50 rounded-lg group" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex-1 space-y-2">
-                <input
-                  placeholder="Speaker Name"
-                  {...register(`speakers.${index}.name`)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
-                />
-                <input
-                  placeholder="Speaker Role"
-                  {...register(`speakers.${index}.role`)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent"
-                />
+                <input placeholder="Speaker Name" {...register(`speakers.${index}.name`)} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark;border-gray-600" />
+                <input placeholder="Speaker Role" {...register(`speakers.${index}.role`)} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark;border-gray-600" />
               </div>
-              <button
-                type="button"
-                onClick={() => removeSpeaker(index)}
-                className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
+              <button type="button" onClick={() => removeSpeaker(index)} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Trash className="w-5 h-5" />
               </button>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Conflict warning */}
         {hasConflict() && (
-          <motion.div 
-            className="bg-red-50 p-4 rounded-lg border border-red-200"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <motion.div className="bg-red-50 p-4 rounded-lg border border-red-200" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <p className="text-red-600 font-medium">
               ⚠️ Conflict Detected: Another event is already scheduled at this venue on the same date and time.
             </p>
           </motion.div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="pt-6"
-        >
-          <button
-            type="submit"
-            disabled={isSubmitting || hasConflict()}
-            className="w-full bg-[#3AA3A0] hover:bg-[#2E827F] text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-6">
+          <button type="submit" disabled={isSubmitting || hasConflict()} className="w-full bg-[#3AA3A0] hover:bg-[#2E827F] text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {isSubmitting ? 'Creating Event...' : 'Create Event'}
           </button>
         </motion.div>
