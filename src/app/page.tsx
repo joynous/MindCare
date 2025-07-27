@@ -1,91 +1,69 @@
+// app/page.tsx (Home)
 'use client';
+
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Sparkles, Users, Calendar, MessageSquare, ChevronLeft, ChevronRight, ArrowDown } from 'lucide-react';
 import { eventImages } from './data/event';
 import Image from 'next/image';
-import { useRef, useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
+import { supabase } from './lib/supabase';
 
-// Feature flag for festive mode (set in environment variables)
+// Feature flag for festive mode
 const FESTIVE_MODE = process.env.NEXT_PUBLIC_FESTIVE_MODE === 'true';
 
 export default function Home() {
+  const [firstName, setFirstName] = useState<string | null>(null);
   const scrollContainer = useRef<HTMLDivElement>(null);
-  const showArrow = true
-  const [sparkleKey, setSparkleKey] = useState(0); // Key to force re-render sparkles
+  const [sparkleKey, setSparkleKey] = useState(0);
+  const showArrow = true;
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainer.current) {
-      const scrollAmount = direction === 'left' ? -500 : 500;
-      scrollContainer.current.scrollBy({
-        left: scrollAmount,
-        behavior: 'smooth'
-      });
+  // Fetch user profile for greeting
+  useEffect(() => {
+    async function loadProfile() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile, error } = await supabase
+          .from('users')
+          .select('first_name')
+          .eq('id', session.user.id)
+          .single();
+        if (!error && profile?.first_name) {
+          setFirstName(profile.first_name);
+        }
+      }
     }
-  };
+    loadProfile();
+  }, []);
 
-  // Trigger confetti on page load (only in festive mode)
+  // Confetti & sparkles
   useEffect(() => {
     if (!FESTIVE_MODE) return;
-    
     const triggerConfetti = () => {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#F7D330', '#3AA3A0', '#FF6B6B', '#8AE2E0']
-      });
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#F7D330','#3AA3A0','#FF6B6B','#8AE2E0'] });
     };
-
-    // Initial confetti
     triggerConfetti();
-    
-    // Periodic confetti every 10 seconds
-    const confettiInterval = setInterval(triggerConfetti, 10000);
-    
-    // Remove arrow after 5 seconds
-    // const arrowTimeout = setTimeout(() => setShowArrow(false), 5000);
-    
-    // More frequent sparkles
-    const sparkleInterval = setInterval(() => {
-      setSparkleKey(prev => prev + 1);
-    }, 1500); // Changed to 1.5 seconds for more frequent sparkles
-    
+    const confInterval = setInterval(triggerConfetti, 10000);
+    const sparkInterval = setInterval(() => setSparkleKey(k => k+1), 1500);
     return () => {
-      clearInterval(confettiInterval);
-      // clearTimeout(arrowTimeout);
-      clearInterval(sparkleInterval);
+      clearInterval(confInterval);
+      clearInterval(sparkInterval);
     };
   }, []);
 
-  // Render sparkles with random positions
+  const scroll = (direction: 'left'|'right') => {
+    if (scrollContainer.current) {
+      scrollContainer.current.scrollBy({ left: direction==='left'? -500:500, behavior:'smooth' });
+    }
+  };
+
   const renderSparkles = () => {
     if (!FESTIVE_MODE) return null;
-    
-    return [...Array(30)].map((_, i) => {
-      const size = Math.random() * 20 + 5;
+    return Array.from({ length: 30 }).map((_, i) => {
+      const size = Math.random()*20+5;
       return (
-        <motion.div
-          key={`${sparkleKey}-${i}`}
-          className="absolute text-2xl"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            fontSize: `${size}px`,
-            opacity: 0
-          }}
-          animate={{
-            y: [0, -50, 0],
-            x: [0, (Math.random() - 0.5) * 50],
-            rotate: [0, 360],
-            opacity: [0, 0.8, 0]
-          }}
-          transition={{
-            duration: 1 + Math.random() * 2,
-            ease: "easeInOut"
-          }}
-        >
+        <motion.div key={`${sparkleKey}-${i}`} className="absolute text-2xl" style={{ left:`${Math.random()*100}%`, top:`${Math.random()*100}%`, fontSize:`${size}px`, opacity:0 }} animate={{ y:[0,-50,0], x:[0,(Math.random()-0.5)*50], rotate:[0,360], opacity:[0,0.8,0] }} transition={{ duration:1+Math.random()*2, ease:'easeInOut' }}>
           ✨
         </motion.div>
       );
@@ -94,28 +72,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-50 overflow-hidden">
-      {/* Festive elements only shown when feature flag is enabled */}
-      {FESTIVE_MODE && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          {/* Floating Sparkles */}
-          {renderSparkles()}
-        </div>
-      )}
+      {FESTIVE_MODE && <div className="fixed inset-0 pointer-events-none z-50">{renderSparkles()}</div>}
 
-      {/* Animated Hero Section */}
-      <motion.section 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="container mt-10 mx-auto px-4 py-16 text-center relative overflow-hidden"
-      >
-        {/* Festive Banner (moved inside hero section) */}
+      <motion.section className="container mt-10 mx-auto px-4 py-16 text-center relative overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        {/* Greeting with styled name */}
+        {firstName && (
+          <p className="text-lg text-gray-700 mb-4">
+            Hey,&nbsp;
+            <span className="text-teal-600 font-semibold underline decoration-yellow-300">
+              {firstName}
+            </span>
+            .
+          </p>
+        )}
+
         {FESTIVE_MODE && (
-          <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="absolute top-4 left-0 right-0 bg-gradient-to-r from-[#FF6B6B] to-[#F7D330] py-2 text-white font-bold text-lg text-center z-50"
-          >
+          <motion.div initial={{y:-50,opacity:0}} animate={{y:0,opacity:1}} transition={{delay:0.5}} className="absolute top-4 left-0 right-0 bg-gradient-to-r from-[#FF6B6B] to-[#F7D330] py-2 text-white font-bold text-lg text-center z-50">
             🎊 Joynous Fest coming sunday! 🎊
           </motion.div>
         )}
