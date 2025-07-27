@@ -7,15 +7,13 @@ interface SessionTimeoutModalProps {
   onLogout: () => void;
 }
 
-interface SessionTimeoutModalProps {
-  onContinue: () => void;
-  onLogout: () => void;
-}
-
-export default function SessionTimeoutModal({ onContinue, onLogout }: SessionTimeoutModalProps) {
+export default function SessionTimeoutModal({
+  onContinue,
+  onLogout,
+}: SessionTimeoutModalProps) {
   return (
-   <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]"
     >
       <div
         className="relative z-[10000] bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center"
