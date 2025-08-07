@@ -1,6 +1,3 @@
-export const revalidate = 0;
-
-// src/app/events/page.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -14,6 +11,7 @@ interface Event {
   eventname: string;
   eventdate: string;
   eventtime: string;
+  eventtype: string;
   eventvenue: string;
   bookedseats: number;
   totalseats: number;
@@ -29,7 +27,7 @@ export default function EventsPage() {
       // fetch events
       const { data: evts, error: evErr } = await supabase
         .from('events')
-        .select('eventid, eventname, eventdate, eventtime, eventvenue, bookedseats, totalseats')
+        .select('eventid, eventname, eventdate, eventtime, eventtype, eventvenue, bookedseats, totalseats')
         .order('eventdate', { ascending: true });
       if (!evErr && evts) setEvents(evts);
 
@@ -95,7 +93,7 @@ export default function EventsPage() {
               >
                 <div className="relative">
                   <Image
-                    src={`/images/events-header/${(event.eventid.charCodeAt(0) % 5) + 1}.jpg`}
+                    src={`/images/events-header/${event.eventtype.toLowerCase()}.jpg`}
                     alt={event.eventname}
                     width={600}
                     height={300}

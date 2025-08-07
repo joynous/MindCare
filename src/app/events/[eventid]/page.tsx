@@ -15,6 +15,7 @@ interface Event {
   eventname: string;
   eventdate: string;
   eventtime: string;
+  eventtype: string;
   eventvenue: string;
   eventimage: string;
   description: string;
@@ -72,7 +73,7 @@ export default function EventDetailPage() {
     <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50">
       {/* Hero */}
       <motion.div className="relative h-48 md:h-64 lg:h-96 pt-16" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-        <Image src={`/images/events-header/${Math.floor(Math.random()*5)+1}.jpg`} alt={event.eventname} fill className="object-cover" priority sizes="(max-width:768px)100vw,80vw" />
+        <Image src={`/images/events-header/${event.eventtype}.jpg`} alt={event.eventname} fill className="object-cover" priority sizes="(max-width:768px)100vw,80vw" />
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
           <motion.div className="text-center text-white max-w-2xl px-4 pt-5" initial={{ y:20 }} animate={{ y:0 }}>
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 drop-shadow-lg">{event.eventname}</h1>
