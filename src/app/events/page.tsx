@@ -93,7 +93,11 @@ export default function EventsPage() {
               >
                 <div className="relative">
                   <Image
-                    src={`/images/events-header/${event.eventtype.toLowerCase()}.jpg`}
+                    src={
+                          event.eventtype
+                          ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
+                          : '/images/events-header/stranger.jpg'
+                    } 
                     alt={event.eventname}
                     width={600}
                     height={300}
@@ -193,8 +197,11 @@ export default function EventsPage() {
                   >
                     <div className="relative">
                       <Image
-                        src={`/images/events-header/${(event.eventid.charCodeAt(0) % 5) + 1}.jpg`}
-                        alt={event.eventname}
+src={
+        event.eventtype
+          ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
+          : '/images/events-header/stranger.jpg'
+          }                        alt={event.eventname}
                         width={600}
                         height={300}
                         className="w-full h-40 object-cover opacity-70"

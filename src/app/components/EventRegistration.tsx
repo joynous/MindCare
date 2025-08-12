@@ -99,12 +99,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   
   // Check if event is in the future (within 7 days) for early bird eligibility
   useEffect(() => {
-    const eventDate = new Date(event.eventDate);
-    const today = new Date();
-    const timeDiff = eventDate.getTime() - today.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    
-    const earlyBirdEligible = daysDiff >= 1; // Changed to 1 day
+    const earlyBirdEligible = true; // Changed to 1 day
     setIsEarlyBirdEligible(earlyBirdEligible);
     
     // Initialize coupon info with validity status
