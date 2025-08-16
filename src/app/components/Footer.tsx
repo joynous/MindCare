@@ -33,7 +33,6 @@ export default function Footer() {
             <h3 className="text-lg font-bold text-[#F7D330] mb-4">Resources</h3>
             <ul className="space-y-2">
               <li><Link href="/communityGuidelines" className="text-gray-300 hover:text-[#8AE2E0]">Community Guidelines</Link></li>
-              <li><Link href="/weGotYouCovered" className="text-gray-300 hover:text-[#8AE2E0]">We got you covered</Link></li>
             </ul>
           </div>
 

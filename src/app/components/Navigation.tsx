@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { BrainCircuit, HeartPulse, SmilePlus, Menu, X, Camera, LogOut, PlusCircle } from 'lucide-react';
+import { BrainCircuit, HeartPulse, SmilePlus, Menu, X, LogOut, PlusCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function Navigation() {
@@ -17,8 +17,7 @@ export default function Navigation() {
   const navLinks = [
     { name: 'Home', href: '/', icon: <SmilePlus size={20} /> },
     { name: 'Mental Health Check', href: '/assessor', icon: <BrainCircuit size={20} /> },
-    { name: 'About', href: '/about', icon: <HeartPulse size={20} /> },
-    { name: 'Gallery', href: '/gallery', icon: <Camera size={20} /> },
+    { name: 'About Us', href: '/about', icon: <HeartPulse size={20} /> },
   ];
 
   // Load profile (name + admin flag)
