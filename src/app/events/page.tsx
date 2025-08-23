@@ -20,6 +20,8 @@ interface Event {
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pastPage, setPastPage] = useState(1);
+  const PAST_PAGE_SIZE = 4;
 
   // load events & admin flag
   useEffect(() => {
@@ -71,6 +73,14 @@ export default function EventsPage() {
     d.setHours(0, 0, 0, 0);
     return d < today;
   });
+
+  const sortedPastEvents = [...pastEvents].sort(
+    (a, b) => new Date(b.eventdate).getTime() - new Date(a.eventdate).getTime()
+  );
+  
+  const totalPastPages = Math.max(1, Math.ceil(sortedPastEvents.length / PAST_PAGE_SIZE));
+  const startIdx = (pastPage - 1) * PAST_PAGE_SIZE;
+  const visiblePast = sortedPastEvents.slice(startIdx, startIdx + PAST_PAGE_SIZE);
 
   return (
     <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50 py-12">
@@ -183,56 +193,98 @@ export default function EventsPage() {
         </div>
 
         {pastEvents.length > 0 && (
-          <div className="mt-16 max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-8 text-[#1A2E35]">Past Events</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {pastEvents.map((event) => {
-                const d = new Date(event.eventdate);
-                const daysSince = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+  <div className="mt-16 max-w-4xl mx-auto">
+    <h2 className="text-3xl font-bold text-center mb-8 text-[#1A2E35]">Past Events</h2>
 
-                return (
-                  <div
-                    key={event.eventid}
-                    className="bg-white rounded-xl shadow overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <div className="relative">
-                      <Image
-src={
-        event.eventtype
-          ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
-          : '/images/events-header/stranger.jpg'
-          }                        alt={event.eventname}
-                        width={600}
-                        height={300}
-                        className="w-full h-40 object-cover opacity-70"
-                      />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {daysSince === 0 ? 'Event Ended Today' : `Ended ${daysSince} days ago`}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="text-lg font-bold text-[#1A2E35] mb-2">
-                        {event.eventname}
-                      </h3>
-                      <div className="flex items-center gap-2 text-gray-500 text-sm">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          {d.toLocaleDateString('en-IN', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+    <div className="grid md:grid-cols-2 gap-6">
+      {visiblePast.map((event) => {
+        const d = new Date(event.eventdate);
+        const daysSince = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+
+        return (
+          <div
+            key={event.eventid}
+            className="bg-white rounded-xl shadow overflow-hidden hover:shadow-md transition-shadow"
+          >
+            <div className="relative">
+              <Image
+                src={
+                  event.eventtype
+                    ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
+                    : '/images/events-header/stranger.jpg'
+                }
+                alt={event.eventname}
+                width={600}
+                height={300}
+                className="w-full h-40 object-cover opacity-70"
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <span className="text-white font-bold text-lg">
+                  {daysSince === 0 ? 'Event Ended Today' : `Ended ${daysSince} days ago`}
+                </span>
+              </div>
+            </div>
+            <div className="p-5">
+              <h3 className="text-lg font-bold text-[#1A2E35] mb-2">
+                {event.eventname}
+              </h3>
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <Calendar className="w-4 h-4" />
+                <span>
+                  {d.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
             </div>
           </div>
+        );
+      })}
+    </div>
+
+    {/* --- PAGINATION: controls for Past Events --- */}
+    {totalPastPages > 1 && (
+      <div className="mt-6 flex items-center justify-center gap-3">
+<button
+  onClick={() => setPastPage((p) => Math.max(1, p - 1))}
+  disabled={pastPage === 1}
+  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors
+    ${
+      pastPage === 1
+        ? 'bg-gray-200 text-gray-500 opacity-70 cursor-not-allowed'
+        : 'bg-[#F7D330] text-[#1A2E35] hover:bg-[#F7DD80] hover:shadow-md'
+    }`}
+  aria-label="Previous page"
+>
+  Previous
+</button>
+
+<span className="text-sm text-gray-600">
+  Page <span className="font-semibold">{pastPage}</span> of{' '}
+  <span className="font-semibold">{totalPastPages}</span>
+</span>
+
+<button
+  onClick={() => setPastPage((p) => Math.min(totalPastPages, p + 1))}
+  disabled={pastPage === totalPastPages}
+  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors
+    ${
+      pastPage === totalPastPages
+        ? 'bg-gray-200 text-gray-500 opacity-70 cursor-not-allowed'
+        : 'bg-[#F7D330] text-[#1A2E35] hover:bg-[#F7DD80] hover:shadow-md'
+    }`}
+  aria-label="Next page"
+>
+  Next
+</button>
+      </div>
+    )}
+    {/* --- END PAGINATION --- */}
+  </div>
         )}
+
       </div>
     </div>
   );
