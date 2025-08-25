@@ -5,6 +5,8 @@ import PaymentButton from './PaymentButton';
 import { useForm } from 'react-hook-form';
 import { CheckCircle, XCircle, Minus, Plus } from 'lucide-react';
 
+const STORAGE_KEY = "eventReg:userDetails";
+
 type FormData = {
   name: string;
   email: string;
@@ -33,6 +35,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     handleSubmit, 
     trigger,
     watch,
+    reset,
     formState: { errors, isValid }
   } = useForm<FormData>({
     mode: 'onBlur',
@@ -132,6 +135,27 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     }
   }, [isEarlyBirdEligible, appliedCoupon]);
 
+  // Prefill on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      reset(parsed, { keepDirty: false });
+    }
+  }, [reset]);
+
+  useEffect(() => {
+    const sub = watch((vals) => {
+      setFormData(prev => ({
+        ...prev,
+        ...vals,
+        event: event.eventId,
+      }));
+    });
+
+    return () => sub.unsubscribe();
+  }, [watch, event.eventId]);
+
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -226,6 +250,16 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     }
   };
 
+  // Watch values and save to localStorage after submit
+const values = watch();
+const saveToLocal = () => {
+  const { name, email, phone, age } = values;
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ name, email, phone, age })
+  );
+};
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#1A2E35] dark:text-[#E5E7EB]">Register Now</h2>
@@ -264,7 +298,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
           </p>
         </motion.div>
       )  : (
-        <form onSubmit={handleSubmit(() => {})} className="space-y-6">
+        <form onSubmit={handleSubmit(() => {  saveToLocal();})} className="space-y-6">
           {currentStep === 1 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
