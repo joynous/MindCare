@@ -29,7 +29,7 @@ const eventFormSchema = z.object({
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
 export default function EventCreationForm() {
-  const { register, control, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm<EventFormValues>({
+  const { register, control, handleSubmit, formState: { errors, isSubmitting }} = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: { speakers: [{ name: '', role: '' }] }
   });
@@ -37,9 +37,6 @@ export default function EventCreationForm() {
   const { fields: speakerFields, append: appendSpeaker, remove: removeSpeaker } = useFieldArray({ control, name: 'speakers' });
 
   const [existingEvents, setExistingEvents] = useState<Set<string>>(new Set());
-  const selectedDate = watch('eventDate');
-  const selectedTime = watch('eventTime');
-  const selectedVenue = watch('eventVenue');
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -92,18 +89,6 @@ export default function EventCreationForm() {
           ? (err as { message?: string }).message || 'Failed to create event. Please try again.'
           : 'Failed to create event. Please try again.'
       );
-    }
-  };
-
-  const hasConflict = () => {
-    if (!selectedDate || !selectedTime || !selectedVenue) return false;
-    try {
-      const dateStr = new Date(selectedDate).toISOString().split('T')[0];
-      const timeKey = selectedTime.trim().toUpperCase();
-      const venueKey = selectedVenue.trim().toLowerCase();
-      return existingEvents.has(`${dateStr}|${timeKey}|${venueKey}`);
-    } catch {
-      return false;
     }
   };
 
@@ -215,16 +200,8 @@ export default function EventCreationForm() {
           ))}
         </motion.div>
 
-        {hasConflict() && (
-          <motion.div className="bg-red-50 p-4 rounded-lg border border-red-200" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-red-600 font-medium">
-              ⚠️ Conflict Detected: Another event is already scheduled at this venue on the same date and time.
-            </p>
-          </motion.div>
-        )}
-
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-6">
-          <button type="submit" disabled={isSubmitting || hasConflict()} className="w-full bg-[#3AA3A0] hover:bg-[#2E827F] text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="submit" disabled={isSubmitting} className="w-full bg-[#3AA3A0] hover:bg-[#2E827F] text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {isSubmitting ? 'Creating Event...' : 'Create Event'}
           </button>
         </motion.div>
