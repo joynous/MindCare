@@ -301,7 +301,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Features Grid */}
       <motion.section 
         initial={{ opacity: 0 }}

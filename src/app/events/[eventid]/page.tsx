@@ -76,8 +76,8 @@ export default function EventDetailPage() {
         <Image
           src={
         event.eventtype
-          ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
-          : '/images/events-header/stranger.jpg'
+          ? `/images/events-header/${event.eventtype.toLowerCase()}.webp`
+          : '/images/events-header/stranger.webp'
           }
           alt={event.eventname}
           fill

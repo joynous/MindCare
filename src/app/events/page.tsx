@@ -105,8 +105,8 @@ export default function EventsPage() {
                   <Image
                     src={
                           event.eventtype
-                          ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
-                          : '/images/events-header/stranger.jpg'
+                          ? `/images/events-header/${event.eventtype.toLowerCase()}.webp`
+                          : '/images/events-header/stranger.webp'
                     } 
                     alt={event.eventname}
                     width={600}
@@ -210,8 +210,8 @@ export default function EventsPage() {
               <Image
                 src={
                   event.eventtype
-                    ? `/images/events-header/${event.eventtype.toLowerCase()}.jpg`
-                    : '/images/events-header/stranger.jpg'
+                    ? `/images/events-header/${event.eventtype.toLowerCase()}.webp`
+                    : '/images/events-header/stranger.webp'
                 }
                 alt={event.eventname}
                 width={600}
