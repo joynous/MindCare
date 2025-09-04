@@ -89,6 +89,9 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   >([]);
   const skipAutoApply = useRef(false); // Track if auto-apply should be skipped
 
+  // NEW: universal extra code state (flat ₹50 off per order)
+  const [extraCodeApplied, setExtraCodeApplied] = useState(false);
+
   const earlyBirdDiscountValue = process.env.NEXT_PUBLIC_EARLY_BIRD_DISCOUNT ? parseInt(process.env.NEXT_PUBLIC_EARLY_BIRD_DISCOUNT) : 150;
 
   // Calculate available seats
@@ -98,7 +101,9 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   const originalPricePerTicket = event.paymentAmount;
   const discount = formData.ticketQuantity * (appliedCoupon ? appliedCoupon.discount : 0);
   const totalOriginalPrice = formData.ticketQuantity * originalPricePerTicket;
-  const finalPrice = Math.max(0, totalOriginalPrice - (discount));
+  // NEW: include extra flat ₹50 off if JOYSPECIAL50 applied
+  const extraDiscount = extraCodeApplied ? 50 : 0;
+  const finalPrice = Math.max(0, totalOriginalPrice - (discount + extraDiscount));
   
   // Check if event is in the future (within 7 days) for early bird eligibility
   useEffect(() => {
@@ -124,16 +129,23 @@ const EventRegistration = ({ event }: { event: EventData }) => {
         discount: Math.min(200, originalPricePerTicket * 0.15), 
         description: '15% off (max ₹200)', 
         valid: true 
-      }
+      },
+      // NEW: universal extra coupon that stacks with others
+      // {
+      //   code: 'JOYSPECIAL50',
+      //   discount: 50,
+      //   description: 'Flat ₹50 off (stacks)',
+      //   valid: true
+      // }
     ]);
-  }, [event.eventDate, originalPricePerTicket]);
+  }, [event.eventDate, originalPricePerTicket, earlyBirdDiscountValue]);
 
   // Apply early bird discount by default if eligible and not skipped
   useEffect(() => {
     if (isEarlyBirdEligible && !appliedCoupon && !skipAutoApply.current) {
       setAppliedCoupon({ code: 'EARLYBIRD', discount: earlyBirdDiscountValue });
     }
-  }, [isEarlyBirdEligible, appliedCoupon]);
+  }, [isEarlyBirdEligible, appliedCoupon, earlyBirdDiscountValue]);
 
   // Prefill on mount
   useEffect(() => {
@@ -199,6 +211,16 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   const applyCoupon = (code: string) => {
     setCouponError('');
     const upperCode = code.toUpperCase();
+
+    // NEW: handle JOYSPECIAL50 as stackable extra code
+    if (upperCode === 'JOYSPECIAL50') {
+      if (extraCodeApplied) {
+        setCouponError('JOYSPECIAL50 is already applied');
+        return;
+      }
+      setExtraCodeApplied(true);
+      return;
+    }
     
     if (upperCode === 'EARLYBIRD') {
       if (!isEarlyBirdEligible) {
@@ -223,6 +245,12 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     setCouponCode('');
     setCouponError('');
     skipAutoApply.current = true; // Skip auto-apply after removal
+  };
+
+  // NEW: remove the extra JOYSPECIAL50 code
+  const removeExtra = () => {
+    setExtraCodeApplied(false);
+    if (couponCode.toUpperCase() === 'JOYSPECIAL50') setCouponCode('');
   };
 
   // Function to handle coupon click
@@ -251,14 +279,20 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   };
 
   // Watch values and save to localStorage after submit
-const values = watch();
-const saveToLocal = () => {
-  const { name, email, phone, age } = values;
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ name, email, phone, age })
-  );
-};
+  const values = watch();
+  const saveToLocal = () => {
+    const { name, email, phone, age } = values;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ name, email, phone, age })
+    );
+  };
+
+  // NEW: combine codes for backend tracking (e.g., "EARLYBIRD+JOYSPECIAL50")
+  const combinedCouponCodes = [
+    appliedCoupon?.code || null,
+    extraCodeApplied ? 'JOYSPECIAL50' : null,
+  ].filter(Boolean).join('+');
 
   return (
     <div className="space-y-6">
@@ -641,6 +675,22 @@ const saveToLocal = () => {
                       <span className="text-green-600 dark:text-green-400">-₹{discount}</span>
                     </div>
                   )}
+
+                  {/* NEW: Extra flat discount line for JOYSPECIAL50 */}
+                  {extraCodeApplied && (
+                    <div className="flex justify-between mb-1">
+                      <div className="flex items-center">
+                        <span className="text-gray-600 dark:text-[#9CA3AF]">Extra Discount (JOYSPECIAL50):</span>
+                        <button 
+                          onClick={removeExtra}
+                          className="ml-2 text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <span className="text-green-600 dark:text-green-400">-₹50</span>
+                    </div>
+                  )}
                   
                   <div className="flex justify-between font-semibold mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                     <span className="text-[#1A2E35] dark:text-[#E5E7EB]">Total Amount:</span>
@@ -685,6 +735,14 @@ const saveToLocal = () => {
                     <span className="text-sm">Coupon applied successfully!</span>
                   </div>
                 )}
+
+                {/* NEW: success chip for JOYSPECIAL50 */}
+                {extraCodeApplied && (
+                  <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Extra code JOYSPECIAL50 applied!</span>
+                  </div>
+                )}
                 
                 <div className="mt-3 text-sm">
                   <p className="font-medium mb-1 dark:text-gray-300">Available coupons:</p>
@@ -713,7 +771,7 @@ const saveToLocal = () => {
                 status={paymentStatus}
                 eventData={event}
                 formData={formData}
-                couponCode={appliedCoupon?.code}
+                couponCode={combinedCouponCodes} // send combined codes e.g. "EARLYBIRD+JOYSPECIAL50"
                 onValidate={validateForm}
                 onProcessing={handlePaymentProcessing}
                 onSuccess={handlePaymentSuccess}
