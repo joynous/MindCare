@@ -1,26 +1,38 @@
-// app/trips-landing/page.tsx
+// app/join-our-next-trip/page.tsx
 export const dynamic = 'force-static';
 export const revalidate = 1800; // 30 min
 
 import Image from "next/image";
 import Link from "next/link";
+import Carousel from "../components/Carousel";
 
 export default function TripsLandingPage() {
+    const tripsImages = [
+    { id: 2, src: `/images/trips/joynous-escapes-champawat-calling/2.webp`, alt: 'Strolling/Hiking Club' },
+        { id: 4,src: `/images/trips/joynous-escapes-champawat-calling/5.webp`, alt: 'Trekking Club' },
+    { id: 5,src: `/images/trips/joynous-escapes-champawat-calling/3.webp`, alt: 'Mehfil collective Club' },
+    { id: 1, src: `/images/trips/joynous-escapes-champawat-calling/1.webp`, alt: 'Art Meetup Club' },
+    { id: 3,src: `/images/trips/joynous-escapes-champawat-calling/4.webp`, alt: 'Trekking Club' },
+  ];
+
   return (
     <main className="min-h-screen bg-white text-[#0f172a] dark:bg-[#0b1220] dark:text-[#e5e7eb]">
       {/* Poster / Hero */}
       <section className="relative">
         <div className="relative w-full aspect-[9/12] sm:aspect-[16/9] overflow-hidden">
-          <Image
-            src="/images/trips/poster.webp" // <-- swap with your poster
-            alt="Joynous Trips – Discover, Connect, Explore"
-            fill
-            className="object-cover"
-            priority
-            fetchPriority="high"
-            sizes="100vw"
-            quality={75}
-          />
+          {tripsImages.length > 0 ? (
+                      <Carousel images={tripsImages} title={''} />
+                    ) : (
+                      <Image
+                        src='/images/trips/default.webp'
+                        alt={'Our Next Trip'}
+                        fill
+                        className="object-cover"
+                        sizes="100vw"
+                        quality={100}
+                        priority
+                      />
+                    )}
           {/* CTA on poster bottom */}
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 md:p-8 bg-gradient-to-t from-black/60 to-transparent">
             <div className="max-w-screen-lg mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">

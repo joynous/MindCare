@@ -193,6 +193,7 @@ export default async function TripDetailPage(
                   totalSeats: seatsTotal,
                   bookedSeats: seatsBooked,
                   paymentAmount: trip.price,
+                  entityType: 'trip',
                 }}
               />
             </div>

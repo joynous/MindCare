@@ -8,7 +8,7 @@ const brevo = require('@getbrevo/brevo'); // Use require instead of import
 // Initialize legacy Brevo client
 const apiInstance = new brevo.TransactionalEmailsApi();
 apiInstance.apiKey = {
-    'api-key': process.env.BREVO_API_KEY
+  'api-key': process.env.BREVO_API_KEY
 };
 apiInstance.defaultHeaders = {
   'api-key': process.env.BREVO_API_KEY
@@ -25,54 +25,92 @@ export async function POST(req: Request) {
       throw new Error('Email service configuration is missing');
     }
 
-    const { paymentId, registrationId, amount, eventId, couponCode, numberOfSeats} = await req.json();
-    
-    //1. Check available seats
-    const { data: eventData, error: eventError } = await supabase
-      .from('events')
-      .select('totalseats, bookedseats, eventname, eventvenue, eventdate, eventtime')
-      .eq('eventid', eventId)
-      .single();
+    const {
+      paymentId,
+      registrationId,
+      amount,
+      eventId,          // for events: eventid; for trips: slug (we keep the same name to avoid UI changes)
+      couponCode,
+      numberOfSeats,
+      entityType = 'event', // 👈 NEW: 'event' | 'trip' (default 'event' for backwards compatibility)
+    } = await req.json();
 
-    console.log("eventError", eventError);
+    // 1) Fetch entity and validate seats
+    let title = '';
+    let venueOrLocation = '';
+    let dateOrRange = '';
+    let totalSeats = 0;
+    let bookedSeats = 0;
 
-    if (eventError || !eventData) throw new Error('Event not found');
-    if (eventData.bookedseats >= eventData.totalseats) {
-      throw new Error('No seats available');
+    if (entityType === 'trip') {
+      // Trips capacity + details
+      const { data: trip, error: tripError } = await supabase
+        .from('trips')
+        .select('title, location, start_date, end_date, spots_total, spots_booked')
+        .eq('slug', eventId)
+        .single();
+
+      if (tripError || !trip) throw new Error('Trip not found');
+      totalSeats = trip.spots_total ?? 0;
+      bookedSeats = trip.spots_booked ?? 0;
+      if (bookedSeats >= totalSeats) throw new Error('No seats available');
+
+      title = trip.title;
+      venueOrLocation = trip.location ?? '';
+      const s = new Date(trip.start_date);
+      const e = new Date(trip.end_date);
+      dateOrRange = `${s.toLocaleDateString('en-IN')} – ${e.toLocaleDateString('en-IN')}`;
+    } else {
+      // Events capacity + details
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('totalseats, bookedseats, eventname, eventvenue, eventdate, eventtime')
+        .eq('eventid', eventId)
+        .single();
+
+      if (eventError || !eventData) throw new Error('Event not found');
+      totalSeats = eventData.totalseats ?? 0;
+      bookedSeats = eventData.bookedseats ?? 0;
+      if (bookedSeats >= totalSeats) throw new Error('No seats available');
+
+      title = eventData.eventname;
+      venueOrLocation = eventData.eventvenue;
+      dateOrRange = `${new Date(eventData.eventdate).toLocaleDateString('en-IN')} | ${eventData.eventtime}`;
     }
 
+    // 2) Capture payment
+    await razorpay.payments.capture(paymentId, amount * 100, 'INR');
 
-    // 2. Capture payment
-     await razorpay.payments.capture(
-      paymentId,
-      amount * 100,
-      "INR"
-    );
-    
-    // Update booked seats
-    const { error: seatError } = await supabase
-      .from('events')
-      .update({ bookedseats: eventData.bookedseats + numberOfSeats })
-      .eq('eventid', eventId);
+    // 3) Update booked seats
+    if (entityType === 'trip') {
+      const { error: seatErr } = await supabase
+        .from('trips')
+        .update({ spots_booked: bookedSeats + (numberOfSeats ?? 1) })
+        .eq('slug', eventId);
+      if (seatErr) throw seatErr;
+    } else {
+      const { error: seatErr } = await supabase
+        .from('events')
+        .update({ bookedseats: bookedSeats + (numberOfSeats ?? 1) })
+        .eq('eventid', eventId);
+      if (seatErr) throw seatErr;
+    }
 
-    if (seatError) throw seatError;
-
-
-    // 3. Update database
+    // 4) Update registration
     const { error: updateError } = await supabase
       .from('registrations')
       .update({
         payment_id: paymentId,
         status: 'captured',
-        amount: amount,
-        event: eventId,
+        amount,
+        event: eventId,                 // unchanged: stores slug for trips or eventid for events
         coupon_used: couponCode || null
       })
       .eq('id', registrationId);
 
     if (updateError) throw updateError;
 
-    // 4. Get user details for email
+    // 5) Load user info for email
     const { data: registration, error: fetchError } = await supabase
       .from('registrations')
       .select('email, name, event')
@@ -81,151 +119,120 @@ export async function POST(req: Request) {
 
     if (fetchError) throw fetchError;
 
-    // 5. Send confirmation email
+    // 6) Send confirmation email (same template, variables differ slightly)
     try {
+      const detailsHeading = entityType === 'trip' ? '🗺 Trip Details' : '📅 Event Details';
+      const detailsLink =
+        entityType === 'trip'
+          ? `https://www.joynous.cc/trips/${eventId}`
+          : `https://www.joynous.cc/events/${eventId}`;
+
       const sendSmtpEmail = new brevo.SendSmtpEmail();
       sendSmtpEmail.to = [{ email: registration.email, name: registration.name }];
-      sendSmtpEmail.sender = { 
+      sendSmtpEmail.sender = {
         email: process.env.SENDER_EMAIL,
-        name: 'Joynous Community' 
+        name: 'Joynous Community',
       };
-      sendSmtpEmail.subject = `Registration Confirmed: ${eventData.eventname}`;
+      sendSmtpEmail.subject = `Registration Confirmed: ${title}`;
       sendSmtpEmail.htmlContent = `<!DOCTYPE html>
 <html>
 <head>
-    <style>
-        /* Inline CSS for email client compatibility */
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #F7FFF7; }
-        .container { max-width: 600px; margin: 0 auto; padding: 30px; background: white; }
-        .header { background: #3AA3A0; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-        .logo { max-width: 150px; height: auto; }
-        .content { padding: 30px 20px; color: #1A2E35; }
-        .details-card { background: #F8F9FA; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .badge { background: #F7D330; color: #1A2E35; padding: 5px 10px; border-radius: 4px; font-size: 12px; }
-        .button { background: #3AA3A0; color: white!important; padding: 12px 25px; text-decoration: none; border-radius: 25px; display: inline-block; margin: 15px 0; }
-        .footer { text-align: center; padding: 20px; color: #6C757D; font-size: 12px; }
-        .social-icon {
-  transition: opacity 0.3s ease;
-  border-radius: 50%;
-  padding: 5px;
-  background: #F7FFF7;
-}
-.social-icon:hover {
-  opacity: 0.8;
-  background: #3AA3A0;
-}
-    </style>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #F7FFF7; }
+    .container { max-width: 600px; margin: 0 auto; padding: 30px; background: white; }
+    .header { background: #3AA3A0; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+    .logo { max-width: 150px; height: auto; }
+    .content { padding: 30px 20px; color: #1A2E35; }
+    .details-card { background: #F8F9FA; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .badge { background: #F7D330; color: #1A2E35; padding: 5px 10px; border-radius: 4px; font-size: 12px; }
+    .button { background: #3AA3A0; color: white!important; padding: 12px 25px; text-decoration: none; border-radius: 25px; display: inline-block; margin: 15px 0; }
+    .footer { text-align: center; padding: 20px; color: #6C757D; font-size: 12px; }
+    .social-icon { transition: opacity 0.3s ease; border-radius: 50%; padding: 5px; background: #F7FFF7; }
+    .social-icon:hover { opacity: 0.8; background: #3AA3A0; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <div class="header">
-            <img src="favicon.png" class="logo" alt="Joynous Logo">
+  <div class="container">
+    <div class="header"><img src="favicon.png" class="logo" alt="Joynous Logo"></div>
+    <div class="content">
+      <h1 style="color: #1A2E35; margin-bottom: 25px;">Hi ${registration.name},</h1>
+
+      <div style="text-align: center; margin-bottom: 30px;">
+        <span class="badge">Registration Confirmed!</span>
+        <h2 style="color: #3AA3A0; margin: 15px 0;">${title}</h2>
+      </div>
+
+      <div class="details-card">
+        <h3 style="color: #1A2E35; margin-top: 0;">${detailsHeading}</h3>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin: 15px 0;">
+          <div style="color: #6C757D;">Date:</div>
+          <div>${dateOrRange}</div>
+          <div style="color: #6C757D;">${entityType === 'trip' ? 'Location' : 'Venue'}:</div>
+          <div>${venueOrLocation}</div>
+          <div style="color: #6C757D;">Seats Booked:</div>
+          <div>${numberOfSeats} Ticket${(numberOfSeats ?? 1) > 1 ? 's' : ''}</div>
         </div>
+      </div>
 
-        <!-- Main Content -->
-        <div class="content">
-            <h1 style="color: #1A2E35; margin-bottom: 25px;">Hi ${registration.name},</h1>
-            
-            <div style="text-align: center; margin-bottom: 30px;">
-                <span class="badge">Registration Confirmed!</span>
-                <h2 style="color: #3AA3A0; margin: 15px 0;">${eventData.eventname}</h2>
-            </div>
-
-            <!-- Event Details Card -->
-            <div class="details-card">
-                <h3 style="color: #1A2E35; margin-top: 0;">📅 Event Details</h3>
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin: 15px 0;">
-                    <div style="color: #6C757D;">Date & Time:</div>
-                    <div>${new Date(eventData.eventdate).toLocaleDateString('en-IN')} | ${eventData.eventtime}</div>
-                    
-                    <div style="color: #6C757D;">Venue:</div>
-                    <div>${eventData.eventvenue}</div>
-                    
-                    <div style="color: #6C757D;">Seats Booked:</div>
-                    <div>${numberOfSeats} Ticket</div>
-                </div>
-            </div>
-
-            <!-- Payment Details -->
-            <div style="margin: 25px 0;">
-                <h3 style="color: #1A2E35; margin-bottom: 15px;">💳 Payment Summary</h3>
-                <div style="background: #F7FFF7; padding: 15px; border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                        <span>Amount Paid:</span>
-                        <span style="font-weight: bold;">₹${amount}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Transaction ID:</span>
-                        <span style="color: #3AA3A0;">${paymentId}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CTA Buttons -->
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="https://www.joynous.cc/events/${eventId}" class="button">
-                    View Event Details
-                </a>
-                <p style="margin: 15px 0;">Need help? <a href="mailto:support@joynous.cc" style="color: #3AA3A0; text-decoration: none;">
-  <span style="border-bottom: 1px solid #3AA3A0;">support@joynous.cc</span>
-</a></p>
-            </div>
+      <div style="margin: 25px 0;">
+        <h3 style="color: #1A2E35; margin-bottom: 15px;">💳 Payment Summary</h3>
+        <div style="background: #F7FFF7; padding: 15px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+            <span>Amount Paid:</span>
+            <span style="font-weight: bold;">₹${amount}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Transaction ID:</span>
+            <span style="color: #3AA3A0;">${paymentId}</span>
+          </div>
         </div>
+      </div>
 
-<div class="footer">
-  <p style="margin-bottom: 10px; color: #1A2E35;">Follow us for updates:</p>
-  <div style="margin: 15px 0;">
-    <a href="https://www.instagram.com/_joynous_" 
-       class="social-icon" 
-       style="margin: 0 10px; text-decoration: none; display: inline-block;">
-      <img src="https://img.icons8.com/fluency/48/instagram-new.png" 
-           alt="Instagram"
-           width="32"
-           height="32"
-           style="display: block; border: 0; outline: none;">
-    </a>
-    
-    <a href="https://chat.whatsapp.com/E8TtSo1ITfiJaAJx0d4nLl" 
-       class="social-icon" 
-       style="margin: 0 10px; text-decoration: none; display: inline-block;">
-      <img src="https://img.icons8.com/color/48/whatsapp--v1.png" 
-           alt="WhatsApp"
-           width="32"
-           height="32"
-           style="display: block; border: 0; outline: none;">
-    </a>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${detailsLink}" class="button">View ${entityType === 'trip' ? 'Trip' : 'Event'} Details</a>
+        <p style="margin: 15px 0;">Need help?
+          <a href="mailto:support@joynous.cc" style="color: #3AA3A0; text-decoration: none;">
+            <span style="border-bottom: 1px solid #3AA3A0;">support@joynous.cc</span>
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p style="margin-bottom: 10px; color: #1A2E35;">Follow us for updates:</p>
+      <div style="margin: 15px 0;">
+        <a href="https://www.instagram.com/_joynous_" class="social-icon" style="margin: 0 10px; text-decoration: none; display: inline-block;">
+          <img src="https://img.icons8.com/fluency/48/instagram-new.png" alt="Instagram" width="32" height="32" style="display: block; border: 0; outline: none;">
+        </a>
+        <a href="https://chat.whatsapp.com/E8TtSo1ITfiJaAJx0d4nLl" class="social-icon" style="margin: 0 10px; text-decoration: none; display: inline-block;">
+          <img src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="WhatsApp" width="32" height="32" style="display: block; border: 0; outline: none;">
+        </a>
+      </div>
+      <p style="font-size: 11px; color: #6C757D; line-height: 1.6;">
+        Need help? <a href="mailto:support@joynous.cc" style="color: #3AA3A0; text-decoration: none; border-bottom: 1px solid #3AA3A0;">Contact Support</a><br>
+        © ${new Date().getFullYear()} Joynous Community<br>
+        R K Puram, New Delhi, 110022
+      </p>
+    </div>
   </div>
-  <p style="font-size: 11px; color: #6C757D; line-height: 1.6;">
-    Need help? <a href="mailto:support@joynous.cc" 
-                 style="color: #3AA3A0; text-decoration: none; border-bottom: 1px solid #3AA3A0;">
-      Contact Support
-    </a><br>
-    © ${new Date().getFullYear()} Joynous Community<br>
-    R K Puram, New Delhi, 110022
-  </p>
-</div>    
-</div>
 </body>
 </html>`;
 
-        await apiInstance.sendTransacEmail(sendSmtpEmail);
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
-      // Continue even if email fails, but log the error
+      // continue even if email fails
     }
 
-    return NextResponse.json({ 
-      success: true,
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Payment processing error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error instanceof Error ? error.message : 'Payment processing failed',
-        ...(error instanceof Error && process.env.NODE_ENV === 'development' && { stack: error.stack })
+        ...(error instanceof Error &&
+          process.env.NODE_ENV === 'development' && { stack: error.stack }),
       },
       { status: 500 }
     );

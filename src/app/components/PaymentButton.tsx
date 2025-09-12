@@ -28,11 +28,14 @@ interface PaymentButtonProps {
     ticketQuantity: number;
   };
   eventData: EventData;
-  couponCode?: string; // Add couponCode prop
+  couponCode?: string;
   onValidate?: () => Promise<boolean>;
   onProcessing?: () => void;
   onSuccess?: (paymentId: string) => void;
   onError?: (error: string) => void;
+
+  /** 👇 NEW: choose entity type without changing UI */
+  entityType?: 'event' | 'trip';
 }
 
 export default function PaymentButton({
@@ -41,10 +44,11 @@ export default function PaymentButton({
   onRetry,
   formData,
   eventData,
-  couponCode, // Destructure couponCode
+  couponCode,
   onValidate,
   onProcessing,
-  onSuccess
+  onSuccess,
+  entityType = 'event', // default keeps existing behavior
 }: PaymentButtonProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -56,7 +60,6 @@ export default function PaymentButton({
     script.async = true;
     script.onload = () => setScriptLoaded(true);
     document.body.appendChild(script);
-
     return () => {
       document.body.removeChild(script);
     };
@@ -68,20 +71,20 @@ export default function PaymentButton({
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Insert registration data including couponCode
+
+      // Create pending registration
       const { data: registration, error: dbError } = await supabase
         .from('registrations')
         .insert({
           name: formData?.name,
           email: formData?.email,
           age: formData?.age,
-          event: formData?.event,
+          event: formData?.event, // stores eventid or trip slug
           phone: formData?.phone,
           hear_about: formData?.hearAbout,
           user_id: user?.id,
           status: 'pending',
-          coupon_used: couponCode || null, // Add coupon_code to the insert
+          coupon_used: couponCode || null,
         })
         .select()
         .single();
@@ -97,25 +100,25 @@ export default function PaymentButton({
         prefill: {
           name: formData?.name || '',
           email: formData?.email || '',
-          contact: formData?.phone || ''
+          contact: formData?.phone || '',
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handler: async (response: any) => {
           try {
             onProcessing?.();
-            
-            // Include couponCode in the request to verify-payment
+
             const captureResult = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 paymentId: response.razorpay_payment_id,
-                eventId: eventData.eventId,
+                eventId: eventData.eventId,        // eventid for events, slug for trips
                 registrationId: registration.id,
-                amount: amount,
-                couponCode: couponCode, // Pass couponCode to the API
-                numberOfSeats: formData?.ticketQuantity
-              })
+                amount,
+                couponCode,
+                numberOfSeats: formData?.ticketQuantity,
+                entityType,                        // 👈 pass through
+              }),
             });
 
             if (!captureResult.ok) {
@@ -131,15 +134,10 @@ export default function PaymentButton({
             );
           }
         },
-        theme: {
-          color: '#3AA3A0',
-          backdrop_color: '#F7FFF7'
-        },
+        theme: { color: '#3AA3A0', backdrop_color: '#F7FFF7' },
         modal: {
-          ondismiss: () => {
-            setErrorMessage('Payment cancelled by user');
-          }
-        }
+          ondismiss: () => { setErrorMessage('Payment cancelled by user'); }
+        },
       };
 
       new window.Razorpay(paymentOptions).open();
@@ -158,10 +156,7 @@ export default function PaymentButton({
         .update({ status: 'failed' })
         .eq('id', registrationId);
     }
-    
-    setErrorMessage(
-      `${error.message}. Please try again. Any money deducted will be refunded.`
-    );
+    setErrorMessage(`${error.message}. Please try again. Any money deducted will be refunded.`);
     onRetry();
   };
 
@@ -178,16 +173,11 @@ export default function PaymentButton({
             : 'bg-[#3AA3A0] hover:bg-[#2E827F] text-white'
         }`}
       >
-        {!scriptLoaded ? (
-          'Loading Payment...'
-        ) : status === 'processing' ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Processing Payment...
-          </>
-        ) : (
-          `Pay ₹${amount}`
-        )}
+        {!scriptLoaded
+          ? 'Loading Payment...'
+          : status === 'processing'
+          ? (<><Loader2 className="w-5 h-5 animate-spin" /> Processing Payment...</>)
+          : `Pay ₹${amount}`}
       </motion.button>
 
       {errorMessage && (
@@ -200,7 +190,7 @@ export default function PaymentButton({
           <span>{errorMessage}</span>
           <button
             onClick={() => {
-              setRetryCount(prev => prev + 1);
+              setRetryCount((prev) => prev + 1);
               handlePayment();
             }}
             className="ml-auto text-sm underline hover:text-red-700"

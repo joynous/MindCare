@@ -27,6 +27,7 @@ export interface EventData {
   totalSeats: number;
   bookedSeats: number;
   paymentAmount: number;
+  entityType?: 'event' | 'trip';
 }
 
 const EventRegistration = ({ event }: { event: EventData }) => {
@@ -768,6 +769,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
 
               <PaymentButton
                 amount={finalPrice}
+                entityType={event.entityType}
                 status={paymentStatus}
                 eventData={event}
                 formData={formData}
