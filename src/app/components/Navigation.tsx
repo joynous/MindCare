@@ -16,6 +16,7 @@ export default function Navigation() {
 
   const navLinks = [
     { name: 'Home', href: '/', icon: <SmilePlus size={20} /> },
+    { name: 'Trips', href: '/trips', icon: <SmilePlus size={20} /> },
     { name: 'Mental Health Check', href: '/assessor', icon: <BrainCircuit size={20} /> },
     { name: 'About Us', href: '/about', icon: <HeartPulse size={20} /> },
   ];
