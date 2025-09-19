@@ -72,7 +72,7 @@ export default function EventDetailPage() {
   return (
     <div className="min-h-screen mt-10 bg-gradient-to-b from-orange-50 to-amber-50">
       {/* Hero */}
-      <motion.div className="relative h-48 md:h-64 lg:h-96 pt-16" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+      <motion.div className="relative h-70 md:h-64 lg:h-96 pt-16" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
         <Image
           src={
         event.eventtype

@@ -102,8 +102,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   const originalPricePerTicket = event.paymentAmount;
   const discount = formData.ticketQuantity * (appliedCoupon ? appliedCoupon.discount : 0);
   const totalOriginalPrice = formData.ticketQuantity * originalPricePerTicket;
-  // NEW: include extra flat ₹50 off if JOYSPECIAL50 applied
-  const extraDiscount = extraCodeApplied ? 50 : 0;
+  // NEW: include extra flat ₹50 off if JOYSPECIAL100 applied
+  const extraDiscount = extraCodeApplied ? 100 : 0;
   const finalPrice = Math.max(0, totalOriginalPrice - (discount + extraDiscount));
   
   // Check if event is in the future (within 7 days) for early bird eligibility
@@ -133,7 +133,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
       },
       // NEW: universal extra coupon that stacks with others
       // {
-      //   code: 'JOYSPECIAL50',
+      //   code: 'JOYSPECIAL100',
       //   discount: 50,
       //   description: 'Flat ₹50 off (stacks)',
       //   valid: true
@@ -213,10 +213,10 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     setCouponError('');
     const upperCode = code.toUpperCase();
 
-    // NEW: handle JOYSPECIAL50 as stackable extra code
-    if (upperCode === 'JOYSPECIAL50') {
+    // NEW: handle JOYSPECIAL100 as stackable extra code
+    if (upperCode === 'JOYSPECIAL100') {
       if (extraCodeApplied) {
-        setCouponError('JOYSPECIAL50 is already applied');
+        setCouponError('JOYSPECIAL100 is already applied');
         return;
       }
       setExtraCodeApplied(true);
@@ -248,10 +248,10 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     skipAutoApply.current = true; // Skip auto-apply after removal
   };
 
-  // NEW: remove the extra JOYSPECIAL50 code
+  // NEW: remove the extra JOYSPECIAL100 code
   const removeExtra = () => {
     setExtraCodeApplied(false);
-    if (couponCode.toUpperCase() === 'JOYSPECIAL50') setCouponCode('');
+    if (couponCode.toUpperCase() === 'JOYSPECIAL100') setCouponCode('');
   };
 
   // Function to handle coupon click
@@ -289,10 +289,10 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     );
   };
 
-  // NEW: combine codes for backend tracking (e.g., "EARLYBIRD+JOYSPECIAL50")
+  // NEW: combine codes for backend tracking (e.g., "EARLYBIRD+JOYSPECIAL100")
   const combinedCouponCodes = [
     appliedCoupon?.code || null,
-    extraCodeApplied ? 'JOYSPECIAL50' : null,
+    extraCodeApplied ? 'JOYSPECIAL100' : null,
   ].filter(Boolean).join('+');
 
   return (
@@ -677,11 +677,11 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     </div>
                   )}
 
-                  {/* NEW: Extra flat discount line for JOYSPECIAL50 */}
+                  {/* NEW: Extra flat discount line for JOYSPECIAL100 */}
                   {extraCodeApplied && (
                     <div className="flex justify-between mb-1">
                       <div className="flex items-center">
-                        <span className="text-gray-600 dark:text-[#9CA3AF]">Extra Discount (JOYSPECIAL50):</span>
+                        <span className="text-gray-600 dark:text-[#9CA3AF]">Extra Discount (JOYSPECIAL100):</span>
                         <button 
                           onClick={removeExtra}
                           className="ml-2 text-xs text-red-500 hover:text-red-700"
@@ -689,7 +689,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                           Remove
                         </button>
                       </div>
-                      <span className="text-green-600 dark:text-green-400">-₹50</span>
+                      <span className="text-green-600 dark:text-green-400">-₹100</span>
                     </div>
                   )}
                   
@@ -737,11 +737,11 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                   </div>
                 )}
 
-                {/* NEW: success chip for JOYSPECIAL50 */}
+                {/* NEW: success chip for JOYSPECIAL100 */}
                 {extraCodeApplied && (
                   <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
                     <CheckCircle className="w-4 h-4 mr-1" />
-                    <span className="text-sm">Extra code JOYSPECIAL50 applied!</span>
+                    <span className="text-sm">Extra code JOYSPECIAL100 applied!</span>
                   </div>
                 )}
                 
