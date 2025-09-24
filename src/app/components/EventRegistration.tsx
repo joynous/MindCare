@@ -31,9 +31,9 @@ export interface EventData {
 }
 
 const EventRegistration = ({ event }: { event: EventData }) => {
-  const { 
-    register, 
-    handleSubmit, 
+  const {
+    register,
+    handleSubmit,
     trigger,
     watch,
     reset,
@@ -49,7 +49,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
       instagramPhotos: ''
     }
   });
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState<{
@@ -76,68 +76,64 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     termsAccepted: false,
     instagramPhotos: ''
   });
-  
+
   // Watch hearAbout value for conditional rendering
   const hearAboutValue = watch('hearAbout');
-  
+
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{code: string; discount: number} | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponError, setCouponError] = useState('');
   const [isEarlyBirdEligible, setIsEarlyBirdEligible] = useState(false);
   const [couponInfo, setCouponInfo] = useState<
-    Array<{code: string; discount: number; description: string; valid: boolean}>
+    Array<{ code: string; discount: number; description: string; valid: boolean }>
   >([]);
   const skipAutoApply = useRef(false); // Track if auto-apply should be skipped
 
   // NEW: universal extra code state (flat ₹50 off per order)
   const [extraCodeApplied, setExtraCodeApplied] = useState(false);
+  // NEW: second extra code state for GCCSPECIAL200 (₹200 off)
+  const [gccExtraApplied, setGccExtraApplied] = useState(false);
 
   const earlyBirdDiscountValue = process.env.NEXT_PUBLIC_EARLY_BIRD_DISCOUNT ? parseInt(process.env.NEXT_PUBLIC_EARLY_BIRD_DISCOUNT) : 150;
 
   // Calculate available seats
   const availableSeats = event.totalSeats - event.bookedSeats;
-  
+
   // Calculate prices based on ticket quantity
   const originalPricePerTicket = event.paymentAmount;
   const discount = formData.ticketQuantity * (appliedCoupon ? appliedCoupon.discount : 0);
   const totalOriginalPrice = formData.ticketQuantity * originalPricePerTicket;
-  // NEW: include extra flat ₹50 off if JOYSPECIAL100 applied
-  const extraDiscount = extraCodeApplied ? 100 : 0;
+  // NEW: include extra flat off if JOYSPECIAL100 or GCCSPECIAL200 applied (only one allowed)
+  const extraDiscount = extraCodeApplied ? 100 : (gccExtraApplied ? 200 : 0);
   const finalPrice = Math.max(0, totalOriginalPrice - (discount + extraDiscount));
-  
+
   // Check if event is in the future (within 7 days) for early bird eligibility
   useEffect(() => {
     const earlyBirdEligible = true; // Changed to 1 day
     setIsEarlyBirdEligible(earlyBirdEligible);
-    
+
     // Initialize coupon info with validity status
     setCouponInfo([
-      { 
-        code: 'EARLYBIRD', 
-        discount: earlyBirdDiscountValue, 
-        description: `${earlyBirdDiscountValue} off`, 
-        valid: earlyBirdEligible 
+      {
+        code: 'EARLYBIRD',
+        discount: earlyBirdDiscountValue,
+        description: `${earlyBirdDiscountValue} off`,
+        valid: earlyBirdEligible
       },
-      { 
-        code: 'FRIEND10', 
-        discount: Math.min(100, originalPricePerTicket * 0.1), 
-        description: '10% off (max ₹100)', 
-        valid: true 
+      {
+        code: 'FRIEND10',
+        discount: Math.min(100, originalPricePerTicket * 0.1),
+        description: '10% off (max ₹100)',
+        valid: true
       },
-      { 
-        code: 'WELCOME15', 
-        discount: Math.min(200, originalPricePerTicket * 0.15), 
-        description: '15% off (max ₹200)', 
-        valid: true 
+      {
+        code: 'WELCOME15',
+        discount: Math.min(200, originalPricePerTicket * 0.15),
+        description: '15% off (max ₹200)',
+        valid: true
       },
-      // NEW: universal extra coupon that stacks with others
-      // {
-      //   code: 'JOYSPECIAL100',
-      //   discount: 50,
-      //   description: 'Flat ₹50 off (stacks)',
-      //   valid: true
-      // }
+      // NOTE: extra coupons are intentionally not listed here; they can be entered manually.
     ]);
   }, [event.eventDate, originalPricePerTicket, earlyBirdDiscountValue]);
 
@@ -181,7 +177,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   const handleTicketQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return;
     if (newQuantity > availableSeats) return;
-    
+
     setFormData(prev => ({
       ...prev,
       ticketQuantity: newQuantity
@@ -213,23 +209,32 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     setCouponError('');
     const upperCode = code.toUpperCase();
 
-    // NEW: handle JOYSPECIAL100 as stackable extra code
+    // NEW: handle extra codes (only one extra coupon can be applied)
     if (upperCode === 'JOYSPECIAL100') {
-      if (extraCodeApplied) {
-        setCouponError('JOYSPECIAL100 is already applied');
+      if (extraCodeApplied || gccExtraApplied) {
+        setCouponError('Only one extra coupon can be applied');
         return;
       }
       setExtraCodeApplied(true);
       return;
     }
-    
+
+    if (upperCode === 'GCCSPECIAL200') {
+      if (extraCodeApplied || gccExtraApplied) {
+        setCouponError('Only one extra coupon can be applied');
+        return;
+      }
+      setGccExtraApplied(true);
+      return;
+    }
+
     if (upperCode === 'EARLYBIRD') {
       if (!isEarlyBirdEligible) {
         setCouponError('Early bird discount has expired for this event');
         return;
       }
       setAppliedCoupon({ code: upperCode, discount: earlyBirdDiscountValue });
-    } 
+    }
     else if (upperCode === 'FRIEND10') {
       setAppliedCoupon({ code: upperCode, discount: Math.min(100, originalPricePerTicket * 0.1) });
     }
@@ -248,10 +253,11 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     skipAutoApply.current = true; // Skip auto-apply after removal
   };
 
-  // NEW: remove the extra JOYSPECIAL100 code
+  // NEW: remove any extra code (JOYSPECIAL100 or GCCSPECIAL200)
   const removeExtra = () => {
     setExtraCodeApplied(false);
-    if (couponCode.toUpperCase() === 'JOYSPECIAL100') setCouponCode('');
+    setGccExtraApplied(false);
+    if (['JOYSPECIAL100', 'GCCSPECIAL200'].includes(couponCode.toUpperCase())) setCouponCode('');
   };
 
   // Function to handle coupon click
@@ -262,13 +268,13 @@ const EventRegistration = ({ event }: { event: EventData }) => {
 
   // Function to handle step 1 continue button click
   const handleContinueToPayment = async () => {
-    
+
     // Trigger form validation
     const isValid = await validateForm();
-    
+
     if (isValid) {
       setCurrentStep(2);
-    } else {      
+    } else {
       // Scroll to first error
       setTimeout(() => {
         const firstErrorElement = document.querySelector('.border-red-500');
@@ -289,29 +295,30 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     );
   };
 
-  // NEW: combine codes for backend tracking (e.g., "EARLYBIRD+JOYSPECIAL100")
+  // NEW: combine codes for backend tracking (e.g., "EARLYBIRD+JOYSPECIAL100" or "EARLYBIRD+GCCSPECIAL200")
   const combinedCouponCodes = [
     appliedCoupon?.code || null,
     extraCodeApplied ? 'JOYSPECIAL100' : null,
+    gccExtraApplied ? 'GCCSPECIAL200' : null,
   ].filter(Boolean).join('+');
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#1A2E35] dark:text-[#E5E7EB]">Register Now</h2>
-      
+
       <div className="flex gap-4 mb-6">
         {[1, 2].map((step) => (
-          <div 
+          <div
             key={step}
-            className={`h-2 w-16 rounded-full ${currentStep >= step ? 
-              'bg-[#3AA3A0] dark:bg-[#2DB4AF]' : 
+            className={`h-2 w-16 rounded-full ${currentStep >= step ?
+              'bg-[#3AA3A0] dark:bg-[#2DB4AF]' :
               'bg-gray-200 dark:bg-gray-600'}`}
           />
         ))}
       </div>
 
       {paymentStatus === 'success' ? (
-        <motion.div 
+        <motion.div
           className="text-center p-6 bg-green-50 dark:bg-green-900 rounded-xl"
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
@@ -322,7 +329,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
           </p>
         </motion.div>
       ) : paymentStatus === 'error' ? (
-        <motion.div 
+        <motion.div
           className="text-center p-6 bg-red-50 dark:bg-red-900 rounded-xl"
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
@@ -332,8 +339,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
             Please try again. Any deducted amount will be refunded within 5-7 business days.
           </p>
         </motion.div>
-      )  : (
-        <form onSubmit={handleSubmit(() => {  saveToLocal();})} className="space-y-6">
+      ) : (
+        <form onSubmit={handleSubmit(() => { saveToLocal(); })} className="space-y-6">
           {currentStep === 1 && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -345,7 +352,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                   Full Name *
                 </label>
                 <input
-                  {...register('name', { 
+                  {...register('name', {
                     required: "Name is required",
                     onChange: (e) => handleFormChange('name', e.target.value)
                   })}
@@ -372,7 +379,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     type="number"
                     min="10"
                     max="100"
-                    {...register('age', { 
+                    {...register('age', {
                       required: "Age is required",
                       min: {
                         value: 10,
@@ -404,7 +411,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                   </label>
                   <input
                     type="tel"
-                    {...register('phone', { 
+                    {...register('phone', {
                       required: "Phone number is required",
                       pattern: {
                         value: /^[6-9]\d{9}$/,
@@ -433,7 +440,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 </label>
                 <input
                   type="email"
-                  {...register('email', { 
+                  {...register('email', {
                     required: "Email is required",
                     pattern: {
                       value: /^\S+@\S+\.\S+$/,
@@ -460,7 +467,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                   How did you hear about us? *
                 </label>
                 <select
-                  {...register('hearAbout', { 
+                  {...register('hearAbout', {
                     required: "This field is required",
                     onChange: (e) => handleFormChange('hearAbout', e.target.value)
                   })}
@@ -487,7 +494,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                       Please specify *
                     </label>
                     <input
-                      {...register('otherSource', { 
+                      {...register('otherSource', {
                         required: hearAboutValue === 'Other' ? "Please specify how you heard about us" : false,
                         onChange: (e) => handleFormChange('otherSource', e.target.value)
                       })}
@@ -525,7 +532,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     />
                     <span className="text-gray-700 dark:text-[#E5E7EB]">Yes, absolutely!</span>
                   </label>
-                  
+
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
@@ -605,7 +612,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 >
                   Continue to Payment
                 </button>
-                
+
               </div>
             </motion.div>
           )}
@@ -621,7 +628,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Event: {event.eventName}</p>
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Date: {new Date(event.eventDate).toLocaleDateString()}</p>
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Venue: {event.eventVenue}</p>
-                
+
                 <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-600">
                   {/* Ticket quantity selector */}
                   <div className="flex justify-between items-center mb-3">
@@ -646,7 +653,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Price breakdown */}
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600 dark:text-[#9CA3AF]">
@@ -654,19 +661,19 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     </span>
                     <span className="text-gray-600 dark:text-[#9CA3AF]">₹{originalPricePerTicket}</span>
                   </div>
-                  
+
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600 dark:text-[#9CA3AF]">
                       Subtotal ({formData.ticketQuantity} ticket{formData.ticketQuantity > 1 ? 's' : ''}):
                     </span>
                     <span className="text-gray-600 dark:text-[#9CA3AF]">₹{totalOriginalPrice}</span>
                   </div>
-                  
+
                   {appliedCoupon && (
                     <div className="flex justify-between mb-1">
                       <div className="flex items-center">
                         <span className="text-gray-600 dark:text-[#9CA3AF]">Discount ({appliedCoupon.code}):</span>
-                        <button 
+                        <button
                           onClick={removeCoupon}
                           className="ml-2 text-xs text-red-500 hover:text-red-700"
                         >
@@ -682,7 +689,7 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     <div className="flex justify-between mb-1">
                       <div className="flex items-center">
                         <span className="text-gray-600 dark:text-[#9CA3AF]">Extra Discount (JOYSPECIAL100):</span>
-                        <button 
+                        <button
                           onClick={removeExtra}
                           className="ml-2 text-xs text-red-500 hover:text-red-700"
                         >
@@ -692,7 +699,23 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                       <span className="text-green-600 dark:text-green-400">-₹100</span>
                     </div>
                   )}
-                  
+
+                  {/* NEW: Extra flat discount line for GCCSPECIAL200 */}
+                  {gccExtraApplied && (
+                    <div className="flex justify-between mb-1">
+                      <div className="flex items-center">
+                        <span className="text-gray-600 dark:text-[#9CA3AF]">Extra Discount (GCCSPECIAL200):</span>
+                        <button
+                          onClick={removeExtra}
+                          className="ml-2 text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <span className="text-green-600 dark:text-green-400">-₹200</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between font-semibold mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                     <span className="text-[#1A2E35] dark:text-[#E5E7EB]">Total Amount:</span>
                     <span className="text-[#1A2E35] dark:text-[#E5E7EB]">₹{finalPrice}</span>
@@ -703,33 +726,34 @@ const EventRegistration = ({ event }: { event: EventData }) => {
               {/* Coupon Section */}
               <div className="bg-[#F7FFF7] dark:bg-[#1F2937] p-4 rounded-lg">
                 <h4 className="font-semibold mb-3 dark:text-[#E5E7EB]">Apply Coupon</h4>
-                
-                <div className="flex gap-2">
+
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
                   <input
                     type="text"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                     placeholder="Enter coupon code"
-                    className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
-                      dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
+                    className="flex-1 min-w-0 p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+      dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
                   />
                   <button
                     type="button"
                     onClick={() => applyCoupon(couponCode)}
-                    className="bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white px-4 rounded-lg 
-                      hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors"
+                    className="w-full sm:w-auto shrink-0 bg-[#3AA3A0] dark:bg-[#2DB4AF] text-white px-4 rounded-lg 
+      hover:bg-[#2E827F] dark:hover:bg-[#1E8F8C] transition-colors"
                   >
                     Apply
                   </button>
                 </div>
-                
+
+
                 {couponError && (
                   <div className="flex items-center mt-2 text-red-500">
                     <XCircle className="w-4 h-4 mr-1" />
                     <span className="text-sm">{couponError}</span>
                   </div>
                 )}
-                
+
                 {appliedCoupon && (
                   <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
                     <CheckCircle className="w-4 h-4 mr-1" />
@@ -744,12 +768,20 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                     <span className="text-sm">Extra code JOYSPECIAL100 applied!</span>
                   </div>
                 )}
-                
+
+                {/* NEW: success chip for GCCSPECIAL200 */}
+                {gccExtraApplied && (
+                  <div className="flex items-center mt-2 text-green-600 dark:text-green-400">
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    <span className="text-sm">Extra code GCCSPECIAL200 applied!</span>
+                  </div>
+                )}
+
                 <div className="mt-3 text-sm">
                   <p className="font-medium mb-1 dark:text-gray-300">Available coupons:</p>
                   <ul className="space-y-1">
                     {couponInfo.map((coupon, index) => (
-                      <li 
+                      <li
                         key={index}
                         className={`flex items-center cursor-pointer p-2 rounded-lg transition-colors ${coupon.valid ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-60'}`}
                         onClick={() => coupon.valid && handleCouponClick(coupon.code)}
