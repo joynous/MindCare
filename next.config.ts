@@ -63,8 +63,7 @@ const nextConfig: NextConfig = {
   },
 
   devIndicators: {
-    buildActivity: true,
-    buildActivityPosition: "bottom-right",
+    position: "bottom-right",
   },
 
   // Dev-only; ignored in prod, but keep explicit
