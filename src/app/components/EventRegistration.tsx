@@ -16,7 +16,8 @@ type FormData = {
   otherSource?: string;
   idProof: boolean;
   termsAccepted: boolean;
-  instagramPhotos: string; // Added Instagram photos permission
+  instagramPhotos: string;
+  ticketNames: string[]; // Added for ticket holder names
 };
 
 export interface EventData {
@@ -46,7 +47,8 @@ const EventRegistration = ({ event }: { event: EventData }) => {
       age: '',
       idProof: false,
       termsAccepted: false,
-      instagramPhotos: ''
+      instagramPhotos: '',
+      ticketNames: ['']
     }
   });
 
@@ -58,18 +60,20 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     phone: string;
     event: string;
     ticketQuantity: number;
+    ticketNames: string[];
     age: string;
     hearAbout: string;
     otherSource?: string;
     idProof: boolean;
     termsAccepted: boolean;
-    instagramPhotos: string; // Added Instagram photos permission
+    instagramPhotos: string;
   }>({
     name: '',
     email: '',
     phone: '',
     event: event.eventId,
     ticketQuantity: 1,
+    ticketNames: [''],
     age: '',
     hearAbout: '',
     idProof: false,
@@ -159,6 +163,9 @@ const EventRegistration = ({ event }: { event: EventData }) => {
         ...prev,
         ...vals,
         event: event.eventId,
+        // Preserve ticket quantity and names as they're managed separately
+        ticketQuantity: prev.ticketQuantity,
+        ticketNames: prev.ticketNames,
       }));
     });
 
@@ -178,9 +185,11 @@ const EventRegistration = ({ event }: { event: EventData }) => {
     if (newQuantity < 1) return;
     if (newQuantity > availableSeats) return;
 
+    const newTicketNames = Array(newQuantity).fill('').map((_, i) => formData.ticketNames[i] || '');
     setFormData(prev => ({
       ...prev,
-      ticketQuantity: newQuantity
+      ticketQuantity: newQuantity,
+      ticketNames: newTicketNames
     }));
   };
 
@@ -288,10 +297,19 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   // Watch values and save to localStorage after submit
   const values = watch();
   const saveToLocal = () => {
-    const { name, email, phone, age } = values;
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ name, email, phone, age })
+      JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        age: formData.age,
+        hearAbout: formData.hearAbout,
+        otherSource: formData.otherSource,
+        idProof: formData.idProof,
+        termsAccepted: formData.termsAccepted,
+        instagramPhotos: formData.instagramPhotos
+      })
     );
   };
 
@@ -514,6 +532,62 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 )}
               </div>
 
+                            {/* Number of Tickets Selector */}
+              <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+                <label className="block text-sm font-medium mb-3 dark:text-[#E5E7EB]">
+                  Number of Tickets *
+                </label>
+                <div className="flex items-center gap-4 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => handleTicketQuantityChange(formData.ticketQuantity - 1)}
+                    disabled={formData.ticketQuantity <= 1}
+                    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                  >
+                    <Minus className="w-5 h-5" />
+                  </button>
+                  <span className="text-2xl font-semibold dark:text-[#E5E7EB]">{formData.ticketQuantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleTicketQuantityChange(formData.ticketQuantity + 1)}
+                    disabled={formData.ticketQuantity >= availableSeats}
+                    className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    ({availableSeats - formData.ticketQuantity} seats available)
+                  </span>
+                </div>
+
+                {/* Ticket Holder Names */}
+                {formData.ticketQuantity > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <label className="block text-sm font-medium dark:text-[#E5E7EB]">
+                      Enter name for each ticket *
+                    </label>
+                    {Array.from({ length: formData.ticketQuantity }).map((_, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        placeholder={`Ticket ${index + 1} holder name`}
+                        value={formData.ticketNames[index] || ''}
+                        onChange={(e) => {
+                          const newTicketNames = [...formData.ticketNames];
+                          newTicketNames[index] = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            ticketNames: newTicketNames
+                          }));
+                        }}
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] dark:focus:ring-[#2DB4AF]
+                          dark:bg-[#1F2937] dark:border-gray-600 dark:text-[#E5E7EB]"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Instagram Photos Permission */}
               <div>
                 <label className="block text-sm font-medium mb-2 dark:text-[#E5E7EB]">
@@ -630,30 +704,6 @@ const EventRegistration = ({ event }: { event: EventData }) => {
                 <p className="text-gray-600 dark:text-[#9CA3AF]">Venue: {event.eventVenue}</p>
 
                 <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-600">
-                  {/* Ticket quantity selector */}
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-gray-600 dark:text-[#9CA3AF]">Number of Tickets:</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleTicketQuantityChange(formData.ticketQuantity - 1)}
-                        disabled={formData.ticketQuantity <= 1}
-                        className="p-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="font-medium">{formData.ticketQuantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleTicketQuantityChange(formData.ticketQuantity + 1)}
-                        disabled={formData.ticketQuantity >= availableSeats}
-                        className="p-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Price breakdown */}
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-600 dark:text-[#9CA3AF]">

@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       eventId,          // for events: eventid; for trips: slug (we keep the same name to avoid UI changes)
       couponCode,
       numberOfSeats,
+      ticketNames = [], // 👈 NEW: ticket holder names
       entityType = 'event', // 👈 NEW: 'event' | 'trip' (default 'event' for backwards compatibility)
     } = await req.json();
 
@@ -104,7 +105,8 @@ export async function POST(req: Request) {
         status: 'captured',
         amount,
         event: eventId,                 // unchanged: stores slug for trips or eventid for events
-        coupon_used: couponCode || null
+        coupon_used: couponCode || null,
+        ticket_names: ticketNames,      // 👈 NEW: save ticket holder names
       })
       .eq('id', registrationId);
 
@@ -113,7 +115,7 @@ export async function POST(req: Request) {
     // 5) Load user info for email
     const { data: registration, error: fetchError } = await supabase
       .from('registrations')
-      .select('email, name, event')
+      .select('email, name, event, ticket_names')
       .eq('id', registrationId)
       .single();
 
@@ -126,6 +128,23 @@ export async function POST(req: Request) {
         entityType === 'trip'
           ? `https://www.joynous.cc/trips/${eventId}`
           : `https://www.joynous.cc/events/${eventId}`;
+
+      // Build ticket names HTML
+      const ticketNamesHtml = registration.ticket_names && registration.ticket_names.length > 0
+        ? `
+          <h3 style="color: #1A2E35; margin-bottom: 15px;">🎫 Ticket Holders</h3>
+          <div style="background: #F8F9FA; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            ${registration.ticket_names
+              .filter((name: string) => name.trim())
+              .map((name: string, index: number) => `
+              <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #E9ECEF;">
+                <span style="background: #3AA3A0; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-right: 10px; flex-shrink: 0;">${index + 1}</span>
+                <span style="flex: 1;">${name}</span>
+              </div>
+            `).join('')}
+          </div>
+        `
+        : '';
 
       const sendSmtpEmail = new brevo.SendSmtpEmail();
       sendSmtpEmail.to = [{ email: registration.email, name: registration.name }];
@@ -173,6 +192,8 @@ export async function POST(req: Request) {
           <div>${numberOfSeats} Ticket${(numberOfSeats ?? 1) > 1 ? 's' : ''}</div>
         </div>
       </div>
+
+      ${ticketNamesHtml}
 
       <div style="margin: 25px 0;">
         <h3 style="color: #1A2E35; margin-bottom: 15px;">💳 Payment Summary</h3>

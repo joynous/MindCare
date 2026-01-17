@@ -26,6 +26,7 @@ interface PaymentButtonProps {
     otherSource?: string;
     event: string;
     ticketQuantity: number;
+    ticketNames?: string[]; // 👈 NEW: ticket holder names
   };
   eventData: EventData;
   couponCode?: string;
@@ -85,6 +86,7 @@ export default function PaymentButton({
           user_id: user?.id,
           status: 'pending',
           coupon_used: couponCode || null,
+          ticket_names: formData?.ticketNames || [], // 👈 NEW: save ticket holder names
         })
         .select()
         .single();
@@ -117,6 +119,7 @@ export default function PaymentButton({
                 amount,
                 couponCode,
                 numberOfSeats: formData?.ticketQuantity,
+                ticketNames: formData?.ticketNames, // 👈 NEW: pass ticket holder names
                 entityType,                        // 👈 pass through
               }),
             });

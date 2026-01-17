@@ -1,12 +1,35 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { supabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { Plus, Trash } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
+
+const parseMarkdown = (text: string): ReactNode[] => {
+  const parts: ReactNode[] = [];
+  const regex = /\*([^*]+)\*/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    parts.push(
+      <strong key={`bold-${match.index}`}>{match[1]}</strong>
+    );
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [text];
+};
 
 const eventFormSchema = z.object({
   eventName: z.string().min(5, 'Event name must be at least 5 characters'),
@@ -29,10 +52,15 @@ const eventFormSchema = z.object({
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
 export default function EventCreationForm() {
-  const { register, control, handleSubmit, formState: { errors, isSubmitting }} = useForm<EventFormValues>({
+  const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: { speakers: [{ name: '', role: '' }] }
   });
+
+  const paymentAmount = useWatch({ control, name: 'paymentAmount', defaultValue: 0 });
+  const voucherAmount = process.env.NEXT_PUBLIC_VOUCHER_AMOUNT ? parseInt(process.env.NEXT_PUBLIC_VOUCHER_AMOUNT) : 399;
+  const displayedAmount = paymentAmount + voucherAmount;
+  const description = useWatch({ control, name: 'description', defaultValue: '' });
 
   const { fields: speakerFields, append: appendSpeaker, remove: removeSpeaker } = useFieldArray({ control, name: 'speakers' });
 
@@ -165,6 +193,26 @@ export default function EventCreationForm() {
           {errors.paymentAmount && <p className="text-red-500 text-sm mt-1">{errors.paymentAmount.message}</p>}
         </motion.div>
 
+        <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
+          <label className="block text-sm font-medium text-gray-700">Voucher Amount (₹)</label>
+          <input
+            type="number"
+            value={voucherAmount}
+            disabled
+            className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
+          />
+        </motion.div>
+
+        <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+          <label className="block text-sm font-medium text-gray-700">Displayed Amount (₹)</label>
+          <input
+            type="number"
+            value={displayedAmount}
+            disabled
+            className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500"
+          />
+        </motion.div>
+
         <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
@@ -173,8 +221,16 @@ export default function EventCreationForm() {
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#3AA3A0] focus:border-transparent dark:bg-gray-700 dark;text-gray-100 dark;border-gray-600"
           />
           <p className="text-sm text-gray-500 mt-1">
-            Note: Line breaks and spaces will be preserved. Links will be clickable.
+            Note: Use *text* to make text bold. Line breaks and spaces will be preserved. Links will be clickable.
           </p>
+          {description && (
+            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900 dark:border-blue-700">
+              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">Preview:</p>
+              <div className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+                {parseMarkdown(description)}
+              </div>
+            </div>
+          )}
           {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
         </motion.div>
 
