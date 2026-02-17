@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
-import { toast } from 'sonner';
 
 interface Event {
   eventid: string;
@@ -24,7 +22,7 @@ export default function EventsPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [pastPage, setPastPage] = useState(1);
   const PAST_PAGE_SIZE = 4;
-  const searchParams = useSearchParams();
+
   // load events & admin flag
   useEffect(() => {
     const load = async () => {
@@ -50,16 +48,6 @@ export default function EventsPage() {
     };
     load();
   }, []);
-
-  useEffect(() => {
-  if (searchParams.get('created') === 'true') {
-    toast.success('Event created successfully 🎉');
-    // Remove query param so refresh doesn’t show again
-    const url = new URL(window.location.href);
-    url.searchParams.delete('created');
-    window.history.replaceState({}, '', url);
-  }
-}, [searchParams]);
 
   // delete handler
   const handleDelete = async (id: string) => {
@@ -107,7 +95,7 @@ export default function EventsPage() {
             d.setHours(0, 0, 0, 0);
             const daysToEvent = Math.floor((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             const isSoldOut = event.bookedseats >= event.totalseats;
-            console.log("*****************Event : ",event)
+
             return (
               <div
                 key={event.eventid}
