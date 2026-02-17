@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { Plus, Trash } from 'lucide-react';
 import { useEffect, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 const parseMarkdown = (text: string): ReactNode[] => {
   const parts: ReactNode[] = [];
@@ -52,6 +53,7 @@ const eventFormSchema = z.object({
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
 export default function EventCreationForm() {
+  const router = useRouter();
   const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: { speakers: [{ name: '', role: '' }] }
@@ -110,7 +112,9 @@ export default function EventCreationForm() {
       });
       if (error) throw error;
       setExistingEvents(prev => new Set(prev).add(conflictKey));
-      toast.success('Event created successfully!');
+      // toast.success('Event created successfully!');
+      router.push('/events?created=true');
+
     } catch (err) {
       toast.error(
         typeof err === 'object' && err !== null && 'message' in err
