@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { supabase } from '../../lib/supabase';
+import { checkIfPaymentCaptured } from '../../lib/paymentUtils';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const brevo = require('@getbrevo/brevo'); // Use require instead of import
 
@@ -35,6 +36,27 @@ export async function POST(req: Request) {
       ticketNames = [], // 👈 NEW: ticket holder names
       entityType = 'event', // 👈 NEW: 'event' | 'trip' (default 'event' for backwards compatibility)
     } = await req.json();
+
+    // IDEMPOTENCY CHECK: Check if payment already exists in registration
+    const { data: existingRegistration, error: checkError } = await supabase
+      .from('registrations')
+      .select('payment_id, status')
+      .eq('id', registrationId)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw new Error('Failed to check existing registration');
+    }
+
+    // If registration already has this payment captured, return success
+    if (existingRegistration?.payment_id === paymentId && existingRegistration?.status === 'captured') {
+      console.log(`[IDEMPOTENT] Payment ${paymentId} already processed for registration ${registrationId}`);
+      return NextResponse.json({ 
+        success: true,
+        isIdempotent: true,
+        message: 'Payment already processed' 
+      });
+    }
 
     // 1) Fetch entity and validate seats
     let title = '';
@@ -79,8 +101,22 @@ export async function POST(req: Request) {
       dateOrRange = `${new Date(eventData.eventdate).toLocaleDateString('en-IN')} | ${eventData.eventtime}`;
     }
 
-    // 2) Capture payment
-    await razorpay.payments.capture(paymentId, amount * 100, 'INR');
+    // 2) Check if payment is already captured in Razorpay
+    const paymentStatus = await checkIfPaymentCaptured(razorpay, paymentId);
+    
+    if (paymentStatus.error) {
+      console.warn(`Payment status check warning for ${paymentId}:`, paymentStatus.error);
+      // Continue anyway - it might be a temporary API issue
+    }
+
+    // If payment is already captured, skip capture step
+    if (!paymentStatus.isAlreadyCaptured) {
+      // Capture payment only if not already captured
+      await razorpay.payments.capture(paymentId, amount * 100, 'INR');
+      console.log(`Payment ${paymentId} captured successfully`);
+    } else {
+      console.log(`Payment ${paymentId} already captured in Razorpay, skipping capture step`);
+    }
 
     // 3) Update booked seats
     if (entityType === 'trip') {
@@ -247,7 +283,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Payment processing error:', error);
+    console.error('Payment processing error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
       {
         success: false,
