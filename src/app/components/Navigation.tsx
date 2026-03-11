@@ -1,6 +1,7 @@
 // app/components/Navigation.tsx
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -67,7 +68,13 @@ export default function Navigation() {
     <nav className="bg-[#F9BF04]/80 backdrop-blur-md border-b border-gray-100 fixed w-full top-0 z-50 h-16">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center">
-          <img src="/favicon.png" height={40} width={40} alt="Logo" />
+          <Image 
+            src="/logo.png" 
+            alt="Logo" 
+            width={100}  // Replace with actual width
+            height={50}  // Replace with actual height
+            priority={true} // Optional: if it's above the fold
+          />
         </Link>
 
         {/* Desktop Navigation */}

@@ -34,39 +34,38 @@ export default function ClientProviders({ children }: { children: React.ReactNod
   }, []);
 
   // 2) Only start/reset timers when there's an active session
-  useEffect(() => {
-    if (!session) {
-      // if logged out, clear any pending timer & hide modal
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setShowTimeout(false);
-      return;
-    }
+useEffect(() => {
+  if (!session) {
+    // if logged out, clear any pending timer & hide modal
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setShowTimeout(false);
+    return;
+  }
 
-    // whenever user does something, reset the timer
-    const resetTimer = () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        setShowTimeout(true);
-      }, INACTIVITY_LIMIT);
-    };
+  // whenever user does something, reset the timer
+  const resetTimer = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setShowTimeout(true);
+    }, INACTIVITY_LIMIT);
+  };
 
-    // wire up our activity events
-    resetTimer();
-    const events: (keyof WindowEventMap)[] = [
-      'mousemove',
-      'mousedown',
-      'keydown',
-      'touchstart',
-      'scroll',
-    ];
-    for (const e of events) window.addEventListener(e, resetTimer);
+  // wire up our activity events
+  resetTimer();
+  const events: (keyof WindowEventMap)[] = [
+    'mousemove',
+    'mousedown',
+    'keydown',
+    'touchstart',
+    'scroll',
+  ];
+  for (const e of events) window.addEventListener(e, resetTimer);
 
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      for (const e of events) window.removeEventListener(e, resetTimer);
-    };
-  }, [session]);
-
+  return () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    for (const e of events) window.removeEventListener(e, resetTimer);
+  };
+}, [session, INACTIVITY_LIMIT]); // ✅ Added INACTIVITY_LIMIT
   const handleContinue = () => {
     setShowTimeout(false);
     // restart inactivity clock

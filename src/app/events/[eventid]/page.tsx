@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import EventRegistration from '../../components/EventRegistration';
 import { Calendar, Clock, MapPin } from 'lucide-react';
@@ -35,24 +36,28 @@ export default function EventDetailPage() {
   const [description, setDescription] = useState('');
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    const { data: evt } = await supabase.from('events').select('*').eq('eventid', eventid!).single();
-    if (evt) {
-      setEvent(evt);
-      setDescription(evt.description);
-      setSpeakers(evt.speakers || []);
-    }
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const { data: profile } = await supabase.from('users').select('is_admin').eq('id', session.user.id).single();
-      setIsAdmin(profile?.is_admin ?? false);
-    }
-    setLoading(false);
-  };
+const fetchData = useCallback(async () => {
+  setLoading(true);
+  const { data: evt } = await supabase.from('events').select('*').eq('eventid', eventid!).single();
+  if (evt) {
+    setEvent(evt);
+    setDescription(evt.description);
+    setSpeakers(evt.speakers || []);
+  }
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) {
+    const { data: profile } = await supabase.from('users').select('is_admin').eq('id', session.user.id).single();
+    setIsAdmin(profile?.is_admin ?? false);
+  }
+  setLoading(false);
+}, [eventid]); // ✅ eventid is the dependency for fetchData
 
-  useEffect(() => { fetchData(); }, [eventid]);
+// Now this works without infinite loops
+useEffect(() => { 
+  fetchData(); 
+}, [fetchData]); // ✅ Just fetchData is enough since it already includes eventid
 
+  useEffect(() => { fetchData(); }, [eventid, fetchData]); // ✅ Added fetchData
   const toggleEdit = () => setEditing(prev => !prev);
   const updateSpeaker = (idx: number, field: 'name' | 'role', value: string) =>
     setSpeakers(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));

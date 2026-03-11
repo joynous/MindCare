@@ -295,23 +295,23 @@ const EventRegistration = ({ event }: { event: EventData }) => {
   };
 
   // Watch values and save to localStorage after submit
-  const values = watch();
-  const saveToLocal = () => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        age: formData.age,
-        hearAbout: formData.hearAbout,
-        otherSource: formData.otherSource,
-        idProof: formData.idProof,
-        termsAccepted: formData.termsAccepted,
-        instagramPhotos: formData.instagramPhotos
-      })
-    );
-  };
+const values = watch();
+const saveToLocal = () => {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      name: values.name || '',
+      email: values.email || '',
+      phone: values.phone || '',
+      age: values.age || '',
+      hearAbout: values.hearAbout || '',
+      otherSource: values.otherSource || '',
+      idProof: values.idProof || false,
+      termsAccepted: values.termsAccepted || false,
+      instagramPhotos: values.instagramPhotos || ''
+    })
+  );
+};
 
   // NEW: combine codes for backend tracking (e.g., "EARLYBIRD+JOYSPECIAL100" or "EARLYBIRD+GCCSPECIAL200")
   const combinedCouponCodes = [
