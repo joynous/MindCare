@@ -69,9 +69,10 @@ export default function Navigation() {
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center">
           <Image 
-            src="/logo.png" 
+            src="/favicon.png" 
             alt="Logo" 
-            width={100}  // Replace with actual width
+            className="rounded-full"
+            width={50}  // Replace with actual width
             height={50}  // Replace with actual height
             priority={true} // Optional: if it's above the fold
           />
